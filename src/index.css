@@ -1,0 +1,286 @@
+@import url("https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=Geist+Mono:wght@100..900&display=swap");
+
+/* ── Global Reset ── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  /* Core palette */
+  --dark: #2d3142; /* very dark grayish blue */
+  --accent: #ef54a4; /* warm coral/orange */
+  --light: #fcfcfc; /* near‑white */
+
+  /* Simple steps (optional tints/shades) */
+  --dark-soft: #3c4257;
+  --dark-softer: #4b526b;
+  --accent-soft: #ec62a9;
+  --accent-softer: #ec7bb5;
+  --light-soft: #f4f4f4;
+  --light-softer: #e8e8e8;
+
+  /* ── Theme Mapping (Light) ── */
+  --background: var(--light);
+  --foreground: var(--dark);
+  --card: #ffffff;
+  --card-foreground: var(--dark);
+  --popover: #ffffff;
+  --popover-foreground: var(--dark);
+
+  --primary: var(--accent);
+  --primary-foreground: #ffffff;
+
+  --secondary: var(--light-soft);
+  --secondary-foreground: var(--dark);
+
+  --muted: var(--light-soft);
+  --muted-foreground: var(--dark-soft);
+
+  --accent-color: var(--accent);
+  --accent-foreground: #ffffff;
+
+  --destructive: #ff4f4f;
+
+  --border: var(--light-softer);
+  --input: var(--light-soft);
+  --ring: var(--accent);
+
+  --chart-1: var(--accent);
+  --chart-2: var(--dark-soft);
+
+  --radius: 0.75rem;
+
+  --font-sans: "Geist", sans-serif;
+  --font-serif: "Geist", sans-serif;
+  --font-mono: "Geist Mono", monospace;
+
+  --shadow-sm: 0 1px 2px rgba(45, 49, 66, 0.06);
+  --shadow-md:
+    0 4px 6px -1px rgba(45, 49, 66, 0.1), 0 2px 4px -1px rgba(45, 49, 66, 0.06);
+  --shadow-lg:
+    0 10px 15px -3px rgba(45, 49, 66, 0.1),
+    0 4px 6px -2px rgba(45, 49, 66, 0.06);
+
+  /* Legacy aliases */
+  --bg: var(--background);
+  --surface: var(--card);
+  --surface2: var(--muted);
+  --surface3: var(--accent-color);
+  --text: var(--foreground);
+  --text2: var(--muted-foreground);
+  --text3: var(--dark-soft);
+  --red: var(--destructive);
+  --red2: #b00000;
+  --grad: linear-gradient(135deg, var(--accent), var(--dark-soft));
+  --green: #27ae60;
+  --blue: var(--dark);
+  --yellow: var(--accent);
+}
+
+.dark {
+  --background: var(--dark);
+  --foreground: var(--light);
+  --card: #222635;
+  --card-foreground: var(--light);
+  --popover: #222635;
+  --popover-foreground: var(--light);
+
+  --primary: var(--accent-soft);
+  --primary-foreground: var(--dark);
+
+  --secondary: #202331;
+  --secondary-foreground: var(--light);
+
+  --muted: #202331;
+  --muted-foreground: var(--light-soft);
+
+  --accent-color: var(--accent);
+  --accent-foreground: var(--light);
+
+  --destructive: #ff6b6b;
+
+  --border: #202331;
+  --input: #202331;
+  --ring: var(--accent-soft);
+
+  --chart-1: var(--accent-soft);
+  --chart-2: var(--light-soft);
+}
+
+body {
+  font-family: var(--font-sans);
+  background: var(--background);
+  color: var(--foreground);
+  min-height: 100vh;
+  transition:
+    background 0.3s ease,
+    color 0.3s ease;
+  overflow-x: hidden;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+button,
+input {
+  font-family: inherit;
+}
+
+/* ── Modern UI Utilities ── */
+.glass-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.glass-card:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.modern-button {
+  background: var(--primary);
+  color: var(--primary-foreground);
+  border-radius: var(--radius);
+  padding: 12px 24px;
+  font-weight: 600;
+  transition:
+    opacity 0.2s ease,
+    transform 0.1s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.modern-button:hover {
+  opacity: 0.9;
+}
+
+.modern-button:active {
+  transform: scale(0.98);
+}
+
+.spinner {
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(0, 0, 0, 0.1);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.progress-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.progress-shimmer::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.3) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* ── Animations ── */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  background: var(--background);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border: 2px solid var(--background);
+  border-radius: 5px;
+}
+
+/* Shadcn / Tailwind-style theme bridge */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent-color);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+  --font-serif: var(--font-serif);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  --shadow-sm: var(--shadow-sm);
+  --shadow-md: var(--shadow-md);
+  --shadow-lg: var(--shadow-lg);
+}
