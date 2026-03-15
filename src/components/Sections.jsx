@@ -308,7 +308,9 @@ export function Features() {
             whileHover={{ translateY: -5, borderColor: "var(--primary)" }}
             style={{
               background: "var(--card)",
-              border: "1px solid var(--border)",
+              borderWidth: "1px",
+              borderStyle: "solid",
+              borderColor: "var(--border)",
               borderRadius: "var(--radius)",
               padding: 32,
               cursor: "default",

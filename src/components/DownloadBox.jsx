@@ -21,7 +21,9 @@ const s = {
     flex: 1,
     background: "rgba(255, 255, 255, 0.05)",
     backdropFilter: "blur(10px)",
-    border: "1px solid var(--glass-border)",
+    borderWidth: "1px",
+    borderStyle: "solid",
+    borderColor: "color-mix(in oklab, var(--glass-border), var(--primary) 75%)",
     borderRadius: "calc(var(--radius) / 1.2)",
     padding: "18px 24px",
     fontSize: 16,
@@ -122,26 +124,37 @@ export default function DownloadBox() {
     setPlatform(detectPlatform(val));
   }
 
-  async function handleFetch() {
+  async function handleFetch(customUrl) {
+    const targetUrl = typeof customUrl === "string" ? customUrl : url;
+
     setError("");
     setMediaInfo(null);
 
-    if (!url.trim()) {
+    if (!targetUrl.trim()) {
       setError("Please paste a supported media URL.");
       return;
     }
-    if (!platform) {
+
+    const currentPlatform =
+      typeof customUrl === "string" ? detectPlatform(targetUrl) : platform;
+
+    if (!currentPlatform) {
       setError(
         "URL not recognized. Supported: YouTube, Instagram, X (Twitter), Facebook",
       );
       return;
     }
 
+    if (typeof customUrl === "string") {
+      setUrl(targetUrl);
+      setPlatform(currentPlatform);
+    }
+
     setLoading(true);
     setProgress({ pct: 0, label: "Initializing…" });
 
     try {
-      const data = await fetchMediaInfo(url);
+      const data = await fetchMediaInfo(targetUrl);
       setMediaInfo(data);
     } catch (err) {
       setError(err.message || "An unexpected error occurred.");
@@ -160,7 +173,6 @@ export default function DownloadBox() {
   return (
     <motion.div
       style={s.box}
-      className="glass-card"
       initial={{ opacity: 0, y: 30 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
@@ -170,7 +182,9 @@ export default function DownloadBox() {
           ref={inputRef}
           style={{
             ...s.input,
-            borderColor: error ? "var(--destructive)" : "var(--glass-border)",
+            borderColor: error
+              ? "var(--destructive)"
+              : "color-mix(in oklab, var(--glass-border), var(--primary) 25%)",
             boxShadow: url ? "0 0 0 4px rgba(var(--accent-rgb), 0.15)" : "none",
             filter: isLocked ? "grayscale(0.5) opacity(0.7)" : "none",
             background: url
@@ -215,7 +229,9 @@ export default function DownloadBox() {
               style={{
                 width: 18,
                 height: 18,
-                border: "2.5px solid rgba(255,255,255,0.3)",
+                borderWidth: "2.5px",
+                borderStyle: "solid",
+                borderColor: "rgba(255,255,255,0.3)",
                 borderTopColor: "#fff",
                 borderRadius: "50%",
               }}
@@ -234,7 +250,7 @@ export default function DownloadBox() {
             style={{ overflow: "hidden" }}
           >
             <div style={s.detectRow}>
-              {platform === "youtube" && (
+              {(platform === "youtube" || platform === "youtube_playlist") && (
                 <>
                   <div
                     style={{
@@ -246,7 +262,9 @@ export default function DownloadBox() {
                     ▶
                   </div>
                   <span style={{ color: "var(--foreground)" }}>
-                    YouTube recognized
+                    {platform === "youtube_playlist"
+                      ? "YouTube Playlist recognized"
+                      : "YouTube recognized"}
                   </span>
                 </>
               )}
@@ -356,6 +374,7 @@ export default function DownloadBox() {
           sourceUrl={url}
           isParentLocked={isLocked}
           onDownloadStateChange={setIsDownloading}
+          onFetch={handleFetch}
         />
       )}
     </motion.div>

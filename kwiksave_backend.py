@@ -120,8 +120,11 @@ def add_to_cache(url: str, data: dict):
 
 
 def human_readable_size(size_bytes: Optional[int]) -> str:
-    if size_bytes is None: return "Unknown"
-    for unit in ['B', 'KB', 'MB', 'GB', 'TB']:
+    if size_bytes is None:
+        return "Unknown"
+    if size_bytes == 0:
+        return "0 B"
+    for unit in ["B", "KB", "MB", "GB", "TB"]:
         if size_bytes < 1024:
             return f"{size_bytes:.1f} {unit}"
         size_bytes /= 1024
@@ -135,11 +138,13 @@ def human_readable_size(size_bytes: Optional[int]) -> str:
 YDL_OPTS_BASE = {
     "quiet": True,
     "no_warnings": True,
-    "noplaylist": True,
+    "noplaylist": False,  # Enabled playlist support
+    "extract_flat": "in_playlist", # Don't extract every video info yet for speed
     "socket_timeout": 60,
     "retries": 10,
     "fragment_retries": 10,
     "nocheckcertificate": True,
+    "nocolor": True,
     "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
 }
 
@@ -256,8 +261,11 @@ class MediaInfoResponse(BaseModel):
     duration_str: Optional[str]
     view_count: Optional[str]
     thumbnail: Optional[str]
-    formats: list[dict]
+    formats: Optional[list[dict]] = None
     platform: str
+    is_playlist: bool = False
+    entries: Optional[list[dict]] = None
+    video_count: Optional[int] = None
 
 
 # ─────────────────────────────────────────────
@@ -304,23 +312,51 @@ async def get_info(request: InfoRequest):
     view_count = info.get("view_count")
     view_str = f"{view_count:,} views" if view_count else None
 
-    # Robust thumbnail selection
+    # robuste thumbnail selection
     thumbnails = info.get("thumbnails", [])
     thumbnail = info.get("thumbnail")
     if thumbnails:
-        # Sort by resolution/preference and pick the best one
         best_thumb = sorted(thumbnails, key=lambda x: (x.get("width", 0), x.get("preference", 0)), reverse=True)[0]
         thumbnail = best_thumb.get("url") or thumbnail
 
-    response_data = {
-        "title": info.get("title", "Unknown Title"),
-        "uploader": info.get("uploader") or info.get("channel"),
-        "duration_str": duration_str,
-        "view_count": view_str,
-        "thumbnail": thumbnail,
-        "formats": process_formats(info),
-        "platform": platform,
-    }
+    if info.get("_type") == "playlist":
+        entries = []
+        for entry in info.get("entries", []):
+            e_duration = entry.get("duration")
+            e_duration_str = time.strftime('%H:%M:%S', time.gmtime(e_duration)) if e_duration else None
+            entries.append({
+                "id": entry.get("id"),
+                "title": entry.get("title") or "Untitled Video",
+                "url": entry.get("url") or entry.get("webpage_url") or f"https://www.youtube.com/watch?v={entry.get('id')}",
+                "duration_str": e_duration_str,
+                "thumbnail": entry.get("thumbnails", [{}])[0].get("url") if entry.get("thumbnails") else None,
+                "uploader": entry.get("uploader") or entry.get("channel"),
+            })
+        
+        response_data = {
+            "title": info.get("title", "Playlist"),
+            "uploader": info.get("uploader") or info.get("webpage_url_basename"),
+            "duration_str": None,
+            "view_count": f"{info.get('playlist_count', len(entries))} videos",
+            "thumbnail": thumbnail,
+            "formats": None,
+            "platform": platform,
+            "is_playlist": True,
+            "entries": entries,
+            "video_count": info.get("playlist_count", len(entries))
+        }
+    else:
+        response_data = {
+            "title": info.get("title", "Unknown Title"),
+            "uploader": info.get("uploader") or info.get("channel"),
+            "duration_str": duration_str,
+            "view_count": view_str,
+            "thumbnail": thumbnail,
+            "formats": process_formats(info),
+            "platform": platform,
+            "is_playlist": False,
+            "entries": None
+        }
 
     add_to_cache(url, response_data)
     return response_data
@@ -409,18 +445,43 @@ async def download(
     
     def run_download():
         def progress_hook(d):
-            if not client_id: return
-            if d['status'] == 'downloading':
-                p = d.get('_percent_str', '0%').replace('%','').strip()
-                speed = d.get('_speed_str', 'N/A')
-                eta = d.get('_eta_str', 'N/A')
+            if not client_id:
+                return
+            if d["status"] == "downloading":
+                # Use raw bytes for clean percentage calculation
+                total = d.get("total_bytes") or d.get("total_bytes_estimate")
+                downloaded = d.get("downloaded_bytes", 0)
+                
+                pct = "0"
+                if total:
+                    pct = f"{(downloaded / total) * 100:.1f}"
+                else:
+                    # Fallback to cleaning the string if totals are missing
+                    pct_str = d.get("_percent_str", "0%").replace("%", "").strip()
+                    pct = re.sub(r"\x1B\[[0-9;]*[mK]", "", pct_str)
+
+                # Clean speed calculation
+                speed_val = d.get("speed")
+                if speed_val is not None:
+                    speed_str = f"{human_readable_size(speed_val)}/s"
+                else:
+                    speed_str = re.sub(r"\x1B\[[0-9;]*[mK]", "", d.get("_speed_str", "N/A"))
+
+                # Clean ETA calculation
+                eta_val = d.get("eta")
+                if eta_val:
+                    m, s = divmod(int(eta_val), 60)
+                    eta_str = f"{m}m {s}s" if m > 0 else f"{s}s"
+                else:
+                    eta_str = re.sub(r"\x1B\[[0-9;]*[mK]", "", d.get("_eta_str", "N/A"))
+
                 progress_store[client_id] = {
                     "status": "downloading",
-                    "progress": p,
-                    "speed": speed,
-                    "eta": eta
+                    "progress": pct,
+                    "speed": speed_str,
+                    "eta": eta_str,
                 }
-            elif d['status'] == 'finished':
+            elif d["status"] == "finished":
                 progress_store[client_id] = {"status": "finished", "progress": "100"}
 
         opts = {

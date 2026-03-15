@@ -106,25 +106,11 @@ export default function Hero() {
     }, 1800);
     return () => clearInterval(intervalId);
   }, []);
-
   const iconMap = {
-    Facebook: (
-      <svg
-        width="clamp(36px, 4vw, 72px)"
-        height="clamp(36px, 4vw, 72px)"
-        viewBox="0 0 24 24"
-      >
-        <circle cx="12" cy="12" r="11" fill="transparent" />
-        <path
-          d="M13.5 8H15V5.5h-1.5C10.96 5.5 10 7.3 10 9.4V11H8v2.5h2v5h3v-5h2.1V11H13v-1.6c0-.9.3-1.4 1.5-1.4Z"
-          fill="currentColor"
-        />
-      </svg>
-    ),
     X: (
       <svg
-        width="clamp(24px, 4vw, 48px)"
-        height="clamp(24px, 4vw, 48px)"
+        width="clamp(32px, 4vw, 72px)"
+        height="clamp(32px, 4vw, 72px)"
         viewBox="0 0 24 24"
         fill="currentColor"
       >
@@ -133,8 +119,8 @@ export default function Hero() {
     ),
     Instagram: (
       <svg
-        width="clamp(24px, 4vw, 48px)"
-        height="clamp(24px, 4vw, 48px)"
+        width="clamp(32px, 4vw, 72px)"
+        height="clamp(32px, 4vw, 72px)"
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
@@ -147,12 +133,23 @@ export default function Hero() {
     ),
     YouTube: (
       <svg
-        width="clamp(24px, 4vw, 48px)"
-        height="clamp(24px, 4vw, 48px)"
+        width="clamp(32px, 4vw, 72px)"
+        height="clamp(32px, 4vw, 72px)"
         viewBox="0 0 24 24"
         fill="currentColor"
       >
         <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
+      </svg>
+    ),
+    Facebook: (
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="clamp(32px, 4vw, 72px)"
+        height="clamp(32px, 4vw, 72px)"
+        viewBox="0 0 16 16"
+        fill="currentColor"
+      >
+        <path d="M16 8.049c0-4.446-3.582-8.05-8-8.05C3.58 0-.002 3.603-.002 8.05c0 4.017 2.926 7.347 6.75 7.951v-5.625h-2.03V8.05H6.75V6.275c0-2.017 1.195-3.131 3.022-3.131.876 0 1.791.157 1.791.157v1.98h-1.009c-.993 0-1.303.621-1.303 1.258v1.51h2.218l-.354 2.326H9.25V16c3.824-.604 6.75-3.934 6.75-7.951" />
       </svg>
     ),
   };
@@ -194,11 +191,13 @@ export default function Hero() {
             color: "var(--primary)",
             display: "inline-flex",
             alignItems: "center",
+            verticalAlign: "middle",
           }}
         >
           <AnimatePresence mode="wait">
             <motion.span
               key={words[index]}
+              style={{ display: "flex", alignItems: "center" }}
               variants={textVariants}
               initial="initial"
               animate="animate"

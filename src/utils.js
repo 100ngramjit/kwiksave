@@ -2,7 +2,13 @@
 export function detectPlatform(url) {
   if (!url) return null;
   const u = url.trim().toLowerCase();
-  if (u.includes("youtube.com") || u.includes("youtu.be")) return "youtube";
+  
+  // YouTube Detection
+  if (u.includes("youtube.com") || u.includes("youtu.be")) {
+    if (u.includes("list=")) return "youtube_playlist";
+    return "youtube";
+  }
+  
   if (u.includes("instagram.com")) return "instagram";
   if (u.includes("tiktok.com")) return "tiktok";
   if (u.includes("twitter.com") || u.includes("x.com")) return "twitter";

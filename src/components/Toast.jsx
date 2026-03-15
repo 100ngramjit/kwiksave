@@ -22,7 +22,9 @@ export default function Toast() {
       {toasts.map(({ id, msg, type }) => (
         <div key={id} style={{
           background: 'var(--card)',
-          border: `1px solid var(--border)`,
+          borderWidth: "1px",
+          borderStyle: "solid",
+          borderColor: "var(--border)",
           borderLeft: `4px solid ${type === 'success' ? '#27ae60' : 'var(--destructive)'}`,
           borderRadius: 'var(--radius)',
           padding: '16px 24px',
