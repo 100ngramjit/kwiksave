@@ -136,10 +136,15 @@ YDL_OPTS_BASE = {
     "quiet": True,
     "no_warnings": True,
     "noplaylist": True,
-    "socket_timeout": 30,
+    "socket_timeout": 60,
+    "retries": 10,
+    "fragment_retries": 10,
     "nocheckcertificate": True,
     "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
 }
+
+# Progress tracking store
+progress_store = {}
 
 
 def extract_info_sync(url: str) -> dict:
@@ -362,11 +367,37 @@ def file_stream_generator(file_path: str, chunk_size=1024*1024):
                 pass
 
 
+@app.get("/api/progress/{client_id}")
+async def progress_stream(client_id: str):
+    """SSE endpoint for real-time download progress."""
+    async def event_generator():
+        start_time = time.time()
+        timeout = 1800  # 30 minutes max for a download progress stream
+        
+        try:
+            while time.time() - start_time < timeout:
+                if client_id in progress_store:
+                    import json
+                    data = progress_store[client_id]
+                    yield f"data: {json.dumps(data)}\n\n"
+                    if data.get("status") in ("finished", "error"):
+                        break
+                await asyncio.sleep(0.5)
+        finally:
+            # Wait a few seconds then clean up to allow last miliseconds of UI update
+            await asyncio.sleep(5)
+            if client_id in progress_store:
+                del progress_store[client_id]
+    
+    return StreamingResponse(event_generator(), media_type="text/event-stream")
+
+
 @app.get("/api/download")
 async def download(
     url: str = Query(..., description="Target URL"),
     format_id: str = Query(..., description="Selected format ID"),
-    filename: str = Query("video", description="Output filename")
+    filename: str = Query("video", description="Output filename"),
+    client_id: Optional[str] = Query(None, description="Client ID for progress tracking")
 ):
     try:
         url = validate_url(url)
@@ -377,12 +408,28 @@ async def download(
     tmp_dir = tempfile.mkdtemp()
     
     def run_download():
+        def progress_hook(d):
+            if not client_id: return
+            if d['status'] == 'downloading':
+                p = d.get('_percent_str', '0%').replace('%','').strip()
+                speed = d.get('_speed_str', 'N/A')
+                eta = d.get('_eta_str', 'N/A')
+                progress_store[client_id] = {
+                    "status": "downloading",
+                    "progress": p,
+                    "speed": speed,
+                    "eta": eta
+                }
+            elif d['status'] == 'finished':
+                progress_store[client_id] = {"status": "finished", "progress": "100"}
+
         opts = {
             **YDL_OPTS_BASE,
             "format": format_id,
             "outtmpl": os.path.join(tmp_dir, "%(title)s.%(ext)s"),
             "merge_output_format": "mp4",
             "fixup": "detect_or_warn",
+            "progress_hooks": [progress_hook],
             "postprocessor_args": {
                 "ffmpeg": ["-report"] # Help debug if it fails
             } if os.environ.get("DEBUG") else {}
@@ -428,6 +475,8 @@ async def download(
         )
     except Exception as e:
         # Cleanup on failure
+        if client_id and client_id in progress_store:
+            progress_store[client_id] = {"status": "error", "message": str(e)}
         if os.path.exists(tmp_dir):
             import shutil
             shutil.rmtree(tmp_dir)

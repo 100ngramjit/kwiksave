@@ -1,7 +1,13 @@
 import React, { useState } from "react";
+import { motion } from "framer-motion";
 
 /* ── shared ── */
-const section = { maxWidth: 940, margin: "120px auto", padding: "0 24px" };
+const section = {
+  maxWidth: 940,
+  margin: "120px auto",
+  padding: "0 24px",
+  scrollMarginTop: "80px",
+};
 const sectionTitle = {
   fontFamily: "var(--font-sans)",
   fontSize: 32,
@@ -35,17 +41,21 @@ export function StatsRow() {
         justifyContent: "center",
         gap: 24,
         padding: "80px 24px",
-        background: "var(--background)",
-        borderTop: "1px solid var(--border)",
-        borderBottom: "1px solid var(--border)",
+        // background: "var(--background)",
+        // borderTop: "1px solid var(--border)",
+        // borderBottom: "1px solid var(--border)",
         maxWidth: 1100,
         margin: "0 auto",
         flexWrap: "wrap",
       }}
     >
-      {stats.map(({ num, label }) => (
-        <div
+      {stats.map(({ num, label }, i) => (
+        <motion.div
           key={label}
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ delay: i * 0.1 }}
           style={{
             textAlign: "center",
             background: "var(--card)",
@@ -80,7 +90,7 @@ export function StatsRow() {
           >
             {label}
           </div>
-        </div>
+        </motion.div>
       ))}
     </div>
   );
@@ -150,8 +160,14 @@ const steps = [
 export function HowItWorks() {
   return (
     <section id="how" style={section}>
-      <div style={sectionTitle}>Simple 3-step process</div>
-      <div style={sectionSub}>Engineered for speed and ease of use.</div>
+      <motion.div
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        viewport={{ once: true }}
+      >
+        <div style={sectionTitle}>Simple 3-step process</div>
+        <div style={sectionSub}>Engineered for speed and ease of use.</div>
+      </motion.div>
       <div
         style={{
           display: "grid",
@@ -159,9 +175,14 @@ export function HowItWorks() {
           gap: 24,
         }}
       >
-        {steps.map(({ num, title, body, icon }) => (
-          <div
+        {steps.map(({ num, title, body, icon }, i) => (
+          <motion.div
             key={num}
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: i * 0.15 }}
+            whileHover={{ scale: 1.02 }}
             style={{
               background: "var(--card)",
               border: "1px solid var(--border)",
@@ -169,7 +190,7 @@ export function HowItWorks() {
               padding: 40,
               position: "relative",
               boxShadow: "var(--shadow-sm)",
-              transition: "transform 0.2s ease",
+              cursor: "default",
             }}
           >
             <div
@@ -220,7 +241,7 @@ export function HowItWorks() {
             >
               {body}
             </p>
-          </div>
+          </motion.div>
         ))}
       </div>
     </section>
@@ -260,10 +281,16 @@ const features = [
 export function Features() {
   return (
     <section id="features" style={section}>
-      <div style={sectionTitle}>Everything you need</div>
-      <div style={sectionSub}>
-        A powerful toolset for all your saving needs.
-      </div>
+      <motion.div
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        viewport={{ once: true }}
+      >
+        <div style={sectionTitle}>Everything you need</div>
+        <div style={sectionSub}>
+          A powerful toolset for all your saving needs.
+        </div>
+      </motion.div>
       <div
         style={{
           display: "grid",
@@ -271,14 +298,20 @@ export function Features() {
           gap: 20,
         }}
       >
-        {features.map(({ title, body }) => (
-          <div
+        {features.map(({ title, body }, i) => (
+          <motion.div
             key={title}
+            initial={{ opacity: 0, scale: 0.9 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ delay: (i % 3) * 0.1 }}
+            whileHover={{ translateY: -5, borderColor: "var(--primary)" }}
             style={{
               background: "var(--card)",
               border: "1px solid var(--border)",
               borderRadius: "var(--radius)",
               padding: 32,
+              cursor: "default",
             }}
           >
             <div
@@ -288,6 +321,7 @@ export function Features() {
                 background: "var(--primary)",
                 borderRadius: "50%",
                 marginBottom: 16,
+                boxShadow: "0 0 6px var(--primary)",
               }}
             />
             <h4
@@ -310,7 +344,7 @@ export function Features() {
             >
               {body}
             </p>
-          </div>
+          </motion.div>
         ))}
       </div>
     </section>
@@ -346,7 +380,7 @@ export function Legal() {
             style={{
               padding: "10px 24px",
               fontSize: 14,
-              fontWeight: 600,
+              fontWeight: 700,
               background: tab === t ? "var(--card)" : "transparent",
               color:
                 tab === t ? "var(--foreground)" : "var(--muted-foreground)",
@@ -363,7 +397,10 @@ export function Legal() {
       </div>
 
       {/* Content */}
-      <div
+      <motion.div
+        key={tab}
+        initial={{ opacity: 0, x: 20 }}
+        animate={{ opacity: 1, x: 0 }}
         style={{
           background: "var(--card)",
           border: "1px solid var(--border)",
@@ -400,7 +437,7 @@ export function Legal() {
             </LegalSection>
           </>
         )}
-      </div>
+      </motion.div>
     </section>
   );
 }
@@ -436,8 +473,8 @@ function LegalSection({ title, children, last }) {
    Footer
 ══════════════════════════════════════════════ */
 export function Footer() {
-  const scrollTo = (id) =>
-    document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+  const scrollTo = (id) => window.scrollTo({ top: 0, behavior: "smooth" });
+
   return (
     <footer
       style={{
@@ -459,7 +496,11 @@ export function Footer() {
         {["how", "features", "legal"].map((id) => (
           <span
             key={id}
-            onClick={() => scrollTo(id)}
+            onClick={() =>
+              document
+                .getElementById(id)
+                ?.scrollIntoView({ behavior: "smooth" })
+            }
             style={{
               fontSize: 14,
               fontWeight: 600,
@@ -467,10 +508,7 @@ export function Footer() {
               cursor: "pointer",
               transition: "color 0.2s ease",
             }}
-            onMouseEnter={(e) => (e.target.style.color = "var(--foreground)")}
-            onMouseLeave={(e) =>
-              (e.target.style.color = "var(--muted-foreground)")
-            }
+            className="nav-link"
           >
             {id === "how"
               ? "How it works"

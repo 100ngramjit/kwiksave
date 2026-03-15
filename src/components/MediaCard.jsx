@@ -1,28 +1,28 @@
-import React, { useState } from "react";
-import { sleep, fetchWithProgress, saveBlob } from "../utils";
+import React, { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { fetchWithProgress, saveBlob } from "../utils";
 
 const s = {
   card: {
-    background: "var(--card)",
-    border: "1px solid var(--border)",
     borderRadius: "var(--radius)",
-    padding: "24px",
+    padding: "28px",
     marginTop: 24,
-    animation: "slideIn .35s ease-out",
     display: "flex",
     flexDirection: "column",
-    gap: 20,
-    boxShadow: "var(--shadow-md)",
+    gap: 24,
+    position: "relative",
+    overflow: "hidden",
   },
   top: { display: "flex", gap: 20, flexWrap: "wrap" },
   thumb: {
-    width: 160,
-    height: 90,
+    width: 180,
+    height: 101,
     borderRadius: "calc(var(--radius) / 2)",
     objectFit: "cover",
     flexShrink: 0,
-    background: "var(--muted)",
-    border: "1px solid var(--border)",
+    background: "rgba(255, 255, 255, 0.05)",
+    border: "1px solid var(--glass-border)",
+    boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
   },
   thumbPlaceholder: {
     width: 160,
@@ -73,18 +73,17 @@ const s = {
     gap: 12,
   },
   fmtBtn: {
-    background: "var(--background)",
-    borderWidth: "1px",
-    borderStyle: "solid",
-    borderColor: "var(--border)",
-    borderRadius: "calc(var(--radius) / 2)",
-    padding: 16,
+    background: "rgba(255, 255, 255, 0.03)",
+    backdropFilter: "blur(8px)",
+    border: "1px solid var(--glass-border)",
+    borderRadius: "calc(var(--radius) / 1.5)",
+    padding: "16px 20px",
     textAlign: "left",
     cursor: "pointer",
-    transition: "all 0.2s ease",
+    transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
     display: "flex",
     flexDirection: "column",
-    gap: 4,
+    gap: 6,
     position: "relative",
     overflow: "hidden",
   },
@@ -112,42 +111,74 @@ const s = {
 
 const API_BASE = "http://localhost:8000";
 
-function FormatButton({ fmt, sourceUrl, info }) {
+function FormatButton({ fmt, sourceUrl, info, isLocked, onStateChange }) {
   const [state, setState] = useState("idle"); // idle | downloading | saving | done
-  const [dlProgress, setDlProgress] = useState(0); // 0-100 or null (indeterminate)
+  const [dlProgress, setDlProgress] = useState(0);
+  const [dlDetails, setDlDetails] = useState({ speed: "", eta: "", status: "Initializing..." });
+
+  useEffect(() => {
+    onStateChange(state !== "idle" && state !== "done");
+  }, [state, onStateChange]);
 
   async function handleClick() {
-    if (state !== "idle") return;
+    if (isLocked || state !== "idle") return;
     
     setState("downloading");
     setDlProgress(0);
+    setDlDetails({ speed: "", eta: "", status: "Server is fetching..." });
+
+    const clientId = `dl_${Math.random().toString(36).slice(2, 11)}`;
+    const eventSource = new EventSource(`${API_BASE}/api/progress/${clientId}`);
+
+    eventSource.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        if (data.status === "downloading") {
+          setDlProgress(parseFloat(data.progress));
+          setDlDetails({ 
+            speed: data.speed, 
+            eta: data.eta, 
+            status: `Server Downloading: ${data.progress}%` 
+          });
+        } else if (data.status === "finished") {
+          setDlProgress(100);
+          setDlDetails(prev => ({ ...prev, status: "Server done, preparing stream..." }));
+          eventSource.close();
+        } else if (data.status === "error") {
+          console.error("Server download error:", data.message);
+          eventSource.close();
+        }
+      } catch (err) {
+        console.error("SSE parse error", err);
+      }
+    };
 
     const params = new URLSearchParams({
       url: sourceUrl,
       format_id: fmt.format_id,
       filename: info?.title || "download",
+      client_id: clientId,
     });
     const dlUrl = `${API_BASE}/api/download?${params}`;
 
     try {
-      // 1. Actually download the file through our progress-tracking fetcher
       const blob = await fetchWithProgress(dlUrl, (pct) => {
+        // Transition to browser download progress once server starts streaming
         setDlProgress(pct);
+        setDlDetails({ speed: "", eta: "", status: `Sending to browser: ${pct}%` });
       });
 
-      // 2. Transision to saving state briefly
+      eventSource.close();
       setState("saving");
-      await sleep(100);
-
-      // 3. Trigger the browser's save dialog for the blob
+      
       const ext = fmt.container === 'mp3' ? 'mp3' : 'mp4';
       const cleanTitle = (info?.title || "video").replace(/[^\w\s-]/gi, '').trim();
       saveBlob(blob, `${cleanTitle}.${ext}`);
 
-      // 4. Show success state
       setState("done");
     } catch (err) {
       console.error(err);
+      if (eventSource) eventSource.close();
       alert(`Download failed: ${err.message}`);
       setState("idle");
     }
@@ -155,85 +186,87 @@ function FormatButton({ fmt, sourceUrl, info }) {
     setTimeout(() => {
       setState("idle");
       setDlProgress(0);
-    }, 4500);
+    }, 4000);
   }
 
-  if (state === "downloading") {
-    const isIndeterminate = dlProgress === null;
-    return (
-      <div style={{ ...s.fmtBtn, borderColor: "var(--primary)", background: "var(--background)", cursor: "default" }}>
-        <div style={{ fontSize: 13, fontWeight: 700, color: "var(--primary)", marginBottom: 8, display: 'flex', justifyContent: 'space-between' }}>
-          <span>{isIndeterminate ? "Streaming..." : `Fetching ${dlProgress}%`}</span>
-          <div className="spinner" style={{ width: 14, height: 14, borderWidth: 2 }} />
-        </div>
-        <div style={{ height: 6, background: "var(--muted)", borderRadius: 3, overflow: "hidden" }}>
-          <div 
-            className="progress-shimmer"
-            style={{ 
-              height: "100%", 
-              background: "var(--primary)", 
-              width: isIndeterminate ? "100%" : `${dlProgress}%`, 
-              transition: isIndeterminate ? "none" : "width .15s ease-out" 
-            }} 
-          />
-        </div>
-      </div>
-    );
-  }
-
-  if (state === "saving") {
-    return (
-      <div style={{ ...s.fmtBtn, background: "var(--secondary)", borderColor: "var(--secondary-foreground)", cursor: "default" }}>
-        <div style={{ fontSize: 13, fontWeight: 700, color: "var(--secondary-foreground)" }}>Finalizing...</div>
-        <div style={{ fontSize: 12, color: "var(--secondary-foreground)", opacity: 0.8, marginTop: 4 }}>
-          Saving to device
-        </div>
-      </div>
-    );
-  }
-
-  if (state === "done") {
-    return (
-      <div style={{ ...s.fmtBtn, background: "var(--primary)", borderColor: "var(--primary)", cursor: "default", animation: "slideIn .3s ease-out" }}>
-        <div style={{ fontSize: 13, fontWeight: 700, color: "var(--primary-foreground)", display: 'flex', alignItems: 'center', gap: 6 }}>
-          <span>✓ Complete</span>
-        </div>
-        <div style={{ fontSize: 12, color: "var(--primary-foreground)", opacity: 0.8, marginTop: 4 }}>
-          File is ready!
-        </div>
-      </div>
-    );
-  }
+  const isDownloading = state === "downloading";
+  const isSaving = state === "saving";
+  const isDone = state === "done";
 
   return (
-    <button
-      style={s.fmtBtn}
+    <motion.button
+      whileHover={isLocked || state !== "idle" ? {} : { translateY: -4, borderColor: "var(--primary)", boxShadow: "var(--shadow-md)" }}
+      whileTap={isLocked || state !== "idle" ? {} : { scale: 0.98 }}
+      style={{
+        ...s.fmtBtn,
+        opacity: isLocked && state === "idle" ? 0.5 : 1,
+        cursor: isLocked || state !== "idle" ? "not-allowed" : "pointer",
+        borderColor: isDownloading ? "var(--primary)" : isDone ? "var(--primary)" : "var(--glass-border)",
+        background: isDone ? "var(--primary)" : isDownloading ? "rgba(var(--accent-rgb), 0.1)" : "rgba(255, 255, 255, 0.05)",
+      }}
       onClick={handleClick}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.borderColor = "var(--primary)";
-        e.currentTarget.style.boxShadow = "var(--shadow-md)";
-        e.currentTarget.style.transform = "translateY(-3px)";
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.borderColor = "var(--border)";
-        e.currentTarget.style.boxShadow = "none";
-        e.currentTarget.style.transform = "translateY(0)";
-      }}
+      disabled={isLocked && state === "idle"}
     >
-      <div style={s.fmtType}>
-        {fmt.container.toUpperCase()}
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
-        </svg>
-      </div>
-      <div style={s.fmtDetail}>{fmt.label}</div>
-      <div style={s.fmtSize}>{fmt.size}</div>
-      <div style={s.fmtQuality}>{fmt.quality}</div>
-    </button>
+      <AnimatePresence mode="wait">
+        {isDownloading ? (
+          <motion.div 
+            key="dl"
+            initial={{ opacity: 0 }} 
+            animate={{ opacity: 1 }} 
+            exit={{ opacity: 0 }}
+            style={{ width: '100%' }}
+          >
+            <div style={{ fontSize: 13, fontWeight: 700, color: "var(--primary)", marginBottom: 8, display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span>{dlDetails.status}</span>
+                <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: "linear" }} style={{ width: 14, height: 14, border: '2px solid rgba(var(--accent-rgb), 0.2)', borderTopColor: 'var(--primary)', borderRadius: '50%' }} />
+              </div>
+              {dlDetails.speed && (
+                <div style={{ fontSize: 11, fontWeight: 500, opacity: 0.7, display: 'flex', justifyContent: 'space-between', marginTop: 2 }}>
+                  <span>Speed: {dlDetails.speed}</span>
+                  <span>ETA: {dlDetails.eta}</span>
+                </div>
+              )}
+            </div>
+            <div style={{ height: 6, background: "var(--muted)", borderRadius: 3, overflow: "hidden" }}>
+              <motion.div 
+                style={{ 
+                  height: "100%", 
+                  background: "var(--primary)", 
+                  width: dlProgress === null ? "100%" : `${dlProgress}%`,
+                }} 
+              />
+            </div>
+          </motion.div>
+        ) : isSaving ? (
+          <motion.div key="sv" initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ color: "var(--foreground)" }}>
+            <div style={{ fontSize: 13, fontWeight: 700 }}>Finalizing...</div>
+            <div style={{ fontSize: 11, opacity: 0.7, marginTop: 4 }}>Saving to device</div>
+          </motion.div>
+        ) : isDone ? (
+          <motion.div key="dn" initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} style={{ color: "var(--primary-foreground)" }}>
+            <div style={{ fontSize: 13, fontWeight: 700 }}>✓ Ready</div>
+            <div style={{ fontSize: 11, opacity: 0.9, marginTop: 4 }}>Download complete</div>
+          </motion.div>
+        ) : (
+          <motion.div key="id" initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ width: '100%' }}>
+            <div style={s.fmtType}>
+              {fmt.container.toUpperCase()}
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+              </svg>
+            </div>
+            <div style={s.fmtDetail}>{fmt.label}</div>
+            <div style={s.fmtSize}>{fmt.size}</div>
+            <div style={s.fmtQuality}>{fmt.quality}</div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.button>
   );
 }
 
-export default function MediaCard({ info, sourceUrl }) {
+export default function MediaCard({ info, sourceUrl, isParentLocked, onDownloadStateChange }) {
   const chips = [
     info.platform?.toUpperCase(),
     info.duration_str,
@@ -242,16 +275,23 @@ export default function MediaCard({ info, sourceUrl }) {
   ].filter(Boolean);
 
   return (
-    <div style={s.card}>
+    <motion.div 
+      style={s.card}
+      className="glass-card"
+      initial={{ opacity: 0, scale: 0.95, y: 20 }}
+      animate={{ opacity: 1, scale: 1, y: 0 }}
+      transition={{ type: "spring", stiffness: 100, damping: 22 }}
+    >
       <div style={s.top}>
         {info.thumbnail ? (
-          <img
+          <motion.img
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
             src={`${API_BASE}/api/proxy/thumbnail?url=${encodeURIComponent(info.thumbnail)}`}
             alt="thumbnail"
             style={s.thumb}
             referrerPolicy="no-referrer"
             onError={(e) => { 
-              // Fallback to original if proxy fails
               if (!e.target.dataset.triedOriginal) {
                 e.target.src = info.thumbnail;
                 e.target.dataset.triedOriginal = "true";
@@ -284,10 +324,17 @@ export default function MediaCard({ info, sourceUrl }) {
         <div style={s.sectionLabel}>Available Formats</div>
         <div style={s.grid}>
           {info.formats.map((fmt, idx) => (
-            <FormatButton key={fmt.format_id || idx} fmt={fmt} sourceUrl={sourceUrl} info={info} />
+            <FormatButton 
+              key={fmt.format_id || idx} 
+              fmt={fmt} 
+              sourceUrl={sourceUrl} 
+              info={info} 
+              isLocked={isParentLocked}
+              onStateChange={onDownloadStateChange}
+            />
           ))}
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
