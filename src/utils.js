@@ -48,7 +48,8 @@ export async function simulateFetch(onProgress) {
 export const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 // ── API helper (Real Backend) ─────────────────────────
-const API_BASE = process.env.REACT_APP_BACKEND_URL || "http://localhost:8000";
+const rawBase = process.env.REACT_APP_BACKEND_URL || "http://localhost:8000";
+const API_BASE = rawBase.endsWith("/") ? rawBase.slice(0, -1) : rawBase;
 
 export async function fetchMediaInfo(url) {
   const res = await fetch(`${API_BASE}/api/info`, {
