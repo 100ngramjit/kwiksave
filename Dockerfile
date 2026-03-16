@@ -18,7 +18,7 @@ WORKDIR /app
 COPY requirements.txt .
 
 # Install dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements_deploy.txt
 
 # Copy the backend code
 COPY kwiksave_backend.py .
