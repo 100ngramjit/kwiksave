@@ -191,7 +191,7 @@ const s = {
   },
 };
 
-const API_BASE = "http://localhost:8000";
+const API_BASE = process.env.REACT_APP_BACKEND_URL || "http://localhost:8000";
 
 function FormatButton({ fmt, sourceUrl, info, isLocked, onStateChange }) {
   const [state, setState] = useState("idle"); // idle | downloading | saving | done

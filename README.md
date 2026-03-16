@@ -103,14 +103,46 @@ sequenceDiagram
 
 ---
 
-## ⚡ Quick Deployment
+## ⚡ Deployment Guide (Free Platforms)
+
+The KwikSave backend can be deployed using Docker on several free platforms. Since the engine relies on `yt-dlp` and `ffmpeg`, Docker ensures all binary dependencies are correctly satisfied.
+
+### 🛠️ Prerequisites
+1.  **GitHub Repo**: Push your code (including `Dockerfile` and `requirements.txt`) to GitHub.
+2.  **Docker Ready**: The repository already includes a production-ready `Dockerfile`.
+
+### 1. Render (Recommended)
+1.  Sign in to [render.com](https://render.com/).
+2.  Create a **New Web Service** and connect your repo.
+3.  Select **Docker** as the Runtime and the **Free** plan.
+4.  Render builds and deploys automatically using the root `Dockerfile`.
+
+### 2. Koyeb
+1.  Sign in to [koyeb.com](https://koyeb.com/).
+2.  Create a New App, select **GitHub** method, and choose your repo.
+3.  Set the builder to **Docker** and ensure the port is set to `8000`.
+
+### 3. HuggingFace Spaces
+1.  Create a **New Space** on [huggingface.co](https://huggingface.co/).
+2.  Choose the **Docker** SDK and the **Blank** template.
+3.  Sync your GitHub repository or push directly to the Space's Git.
+
+### 🛡️ Critical Post-Deployment Settings
+- **CORS**: Update `kwiksave_backend.py` to allow your specific frontend domain.
+- **Frontend URL**: Update your frontend's API base URL to point to the new backend address.
+- **Port**: Ensure the platform maps requests to port `8000`.
+
+---
+
+## 🧪 Quick Local Start
 
 1. **Backend**:
    ```bash
-   pip install fastapi uvicorn yt-dlp
+   pip install -r requirements.txt
    python kwiksave_backend.py
    ```
 2. **Frontend**:
    ```bash
    npm install && npm start
    ```
+
