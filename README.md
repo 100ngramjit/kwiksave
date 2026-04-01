@@ -1,6 +1,6 @@
 # KwikSave 🚀
 
-KwikSave is a high-performance, open-source media download engine. It provides a seamless, professional-grade interface for extracting high-fidelity video and audio from global social platforms including YouTube, Instagram, X (Twitter), and Facebook.
+KwikSave is a high-performance, open-source media download engine. It provides a seamless, professional-grade interface for extracting high-fidelity video and audio from global social platforms including Instagram, X (Twitter), and Facebook.
 
 ---
 
@@ -63,7 +63,7 @@ sequenceDiagram
     participant User
     participant Frontend
     participant Backend
-    participant Platform (YT/IG)
+    participant Platform (IG/TikTok/X)
 
     User->>Frontend: Pastes Link & Clicks Fetch
     Frontend->>Backend: POST /api/info (URL)

@@ -140,7 +140,7 @@ export default function DownloadBox() {
 
     if (!currentPlatform) {
       setError(
-        "URL not recognized. Supported: YouTube, Instagram, X (Twitter), Facebook",
+        "URL not recognized. Supported: Instagram, X (Twitter), Facebook",
       );
       return;
     }
@@ -250,24 +250,7 @@ export default function DownloadBox() {
             style={{ overflow: "hidden" }}
           >
             <div style={s.detectRow}>
-              {(platform === "youtube" || platform === "youtube_playlist") && (
-                <>
-                  <div
-                    style={{
-                      ...s.detectIcon,
-                      background: "#ff0000",
-                      color: "#fff",
-                    }}
-                  >
-                    ▶
-                  </div>
-                  <span style={{ color: "var(--foreground)" }}>
-                    {platform === "youtube_playlist"
-                      ? "YouTube Playlist recognized"
-                      : "YouTube recognized"}
-                  </span>
-                </>
-              )}
+
               {platform === "instagram" && (
                 <>
                   <div

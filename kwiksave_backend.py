@@ -62,8 +62,6 @@ app.add_middleware(
 # ─────────────────────────────────────────────
 
 SUPPORTED_DOMAINS = {
-    # YouTube
-    "youtube.com", "www.youtube.com", "youtu.be", "m.youtube.com", "music.youtube.com",
     # Instagram
     "instagram.com", "www.instagram.com",
     # TikTok
@@ -145,15 +143,23 @@ YDL_OPTS_BASE = {
     "fragment_retries": 10,
     "nocheckcertificate": True,
     "nocolor": True,
-    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    "user_agent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36",
     # Extractor args to help bypass bot detection on cloud IPs
-    "extractor_args": {
-        "youtube": {
-            "player_client": ["ios", "mweb", "android"],
-            "skip": ["webpage", "hls", "dash"]
-        }
-    },
+    "extractor_args": {},
 }
+
+# Cookie Support: If YDL_COOKIES env var is set, Write it to a temp file for yt-dlp
+COOKIE_FILE = None
+if os.environ.get("YDL_COOKIES"):
+    try:
+        tmp_cookie = tempfile.NamedTemporaryFile(delete=False, suffix=".txt", mode="w")
+        tmp_cookie.write(os.environ.get("YDL_COOKIES"))
+        tmp_cookie.close()
+        COOKIE_FILE = tmp_cookie.name
+        YDL_OPTS_BASE["cookiefile"] = COOKIE_FILE
+        print("🍪 Cookies loaded from environment.")
+    except Exception as e:
+        print(f"❌ Failed to load cookies: {e}")
 
 # Progress tracking store
 progress_store = {}
@@ -311,8 +317,7 @@ async def get_info(request: InfoRequest):
     duration_str = time.strftime('%H:%M:%S', time.gmtime(duration)) if duration else None
     
     domain = urlparse(url).netloc.lower()
-    platform = "youtube" if "youtube" in domain or "youtu.be" in domain else \
-               "instagram" if "instagram" in domain else \
+    platform = "instagram" if "instagram" in domain else \
                "tiktok" if "tiktok" in domain else \
                "twitter" if "twitter" in domain or "x.com" in domain else "social"
 
@@ -334,7 +339,7 @@ async def get_info(request: InfoRequest):
             entries.append({
                 "id": entry.get("id"),
                 "title": entry.get("title") or "Untitled Video",
-                "url": entry.get("url") or entry.get("webpage_url") or f"https://www.youtube.com/watch?v={entry.get('id')}",
+                "url": entry.get("url") or entry.get("webpage_url") or "",
                 "duration_str": e_duration_str,
                 "thumbnail": entry.get("thumbnails", [{}])[0].get("url") if entry.get("thumbnails") else None,
                 "uploader": entry.get("uploader") or entry.get("channel"),
