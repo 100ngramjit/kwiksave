@@ -6,7 +6,8 @@ import Toast from './components/Toast';
 
 export default function App() {
   const [isDark, setIsDark] = useState(() => {
-    return localStorage.getItem('theme') === 'dark';
+    const saved = localStorage.getItem('theme');
+    return saved ? saved === 'dark' : true;
   });
 
   useEffect(() => {
