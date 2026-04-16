@@ -5,6 +5,8 @@ import { fetchWithProgress, saveBlob } from "../utils";
 const s = {
   card: {
     borderRadius: "var(--radius)",
+    background: "var(--card)",
+    backgroundImage: "var(--skeuo-gradient)",
     padding: "28px",
     marginTop: 24,
     display: "flex",
@@ -13,6 +15,8 @@ const s = {
     position: "relative",
     overflow: "hidden",
     textAlign: "left",
+    border: "1px solid rgba(0, 0, 0, 0.4)",
+    boxShadow: "0 15px 35px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.1)",
   },
   top: { display: "flex", gap: 20, flexWrap: "wrap" },
   thumb: {
@@ -21,24 +25,23 @@ const s = {
     borderRadius: "calc(var(--radius) / 2)",
     objectFit: "cover",
     flexShrink: 0,
-    background: "rgba(255, 255, 255, 0.05)",
+    background: "rgba(0, 0, 0, 0.2)",
     borderWidth: "1px",
     borderStyle: "solid",
-    borderColor: "var(--glass-border)",
-    boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+    borderColor: "rgba(0,0,0,0.5)",
+    boxShadow: "0 4px 10px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,0.05)",
   },
   thumbPlaceholder: {
-    width: 160,
-    height: 90,
+    width: 180,
+    height: 101,
     borderRadius: "calc(var(--radius) / 2)",
     background: "var(--muted)",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
     flexShrink: 0,
-    borderWidth: "1px",
-    borderStyle: "solid",
-    borderColor: "var(--border)",
+    border: "1px solid rgba(0,0,0,0.3)",
+    boxShadow: "inset 0 2px 4px rgba(0,0,0,0.2)",
   },
   info: { flex: 1, minWidth: 200 },
   title: {
@@ -80,11 +83,11 @@ const s = {
     gap: 12,
   },
   fmtBtn: {
-    background: "rgba(255, 255, 255, 0.03)",
-    backdropFilter: "blur(8px)",
+    background: "rgba(255, 255, 255, 0.04)",
+    backgroundImage: "linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0) 100%)",
     borderWidth: "1px",
     borderStyle: "solid",
-    borderColor: "var(--glass-border)",
+    borderColor: "rgba(0, 0, 0, 0.4)",
     borderRadius: "calc(var(--radius) / 1.5)",
     padding: "16px 20px",
     textAlign: "left",
@@ -95,6 +98,7 @@ const s = {
     gap: 6,
     position: "relative",
     overflow: "hidden",
+    boxShadow: "0 4px 8px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,0.05)",
   },
   fmtType: {
     fontSize: 14,
@@ -136,15 +140,16 @@ const s = {
     alignItems: "center",
     gap: 16,
     padding: "12px 16px",
-    background: "rgba(255, 255, 255, 0.03)",
+    background: "rgba(0, 0, 0, 0.2)",
     borderWidth: "1px",
     borderStyle: "solid",
-    borderColor: "var(--glass-border)",
+    borderColor: "rgba(0,0,0,0.4)",
     borderRadius: "calc(var(--radius) / 2)",
     cursor: "pointer",
     transition: "all 0.2s ease",
     position: "relative",
     overflow: "hidden",
+    boxShadow: "inset 0 2px 4px rgba(0,0,0,0.4), 0 1px 1px rgba(255,255,255,0.05)",
   },
   itemIndex: {
     fontSize: 12,
@@ -309,12 +314,15 @@ function FormatButton({ fmt, sourceUrl, info, isLocked, onStateChange }) {
           ? "var(--primary)"
           : isDone
             ? "var(--primary)"
-            : "var(--glass-border)",
+            : "rgba(0,0,0,0.4)",
         background: isDone
           ? "var(--primary)"
           : isDownloading
             ? "rgba(var(--accent-rgb), 0.1)"
-            : "rgba(255, 255, 255, 0.05)",
+            : "rgba(255, 255, 255, 0.04)",
+        backgroundImage: isDone 
+          ? "linear-gradient(180deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 100%)"
+          : "linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0) 100%)",
       }}
       onClick={handleClick}
       disabled={isLocked && state === "idle"}

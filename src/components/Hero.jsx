@@ -6,7 +6,7 @@ const words = ["Facebook", "X", "Instagram"];
 
 const s = {
   hero: {
-    // FIXED CENTERING: flex container ensures perfect centering
+  // FIXED CENTERING: flex container ensures perfect centering
     display: "flex",
     flexDirection: "column",
     justifyContent: "center",
@@ -17,20 +17,23 @@ const s = {
     width: "100%",
     margin: "0 auto",
     boxSizing: "border-box",
+    position: "relative",
+    zIndex: 1,
   },
   badge: {
     display: "inline-flex",
     alignItems: "center",
     gap: 6,
     background: "var(--secondary)",
-    border: "1px solid var(--border)",
+    backgroundImage: "var(--skeuo-gradient)",
+    border: "1px solid rgba(0, 0, 0, 0.4)",
     borderRadius: "20px",
-    padding: "5px 14px",
+    padding: "6px 16px",
     fontSize: 12,
     fontWeight: 700,
     color: "var(--secondary-foreground)",
     marginBottom: 24,
-    boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
+    boxShadow: "0 4px 8px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,0.08)",
   },
   dot: {
     width: 7,
@@ -41,14 +44,14 @@ const s = {
     flexShrink: 0,
   },
   h1: {
-    // Restored simple text-align: center; removed flex column
     fontSize: "clamp(34px, 6vw, 68px)",
     fontWeight: 900,
-    lineHeight: 1.1,
-    letterSpacing: "-1.5px",
+    lineHeight: 1.05,
+    letterSpacing: "-0.03em",
     marginBottom: 16,
     color: "var(--foreground)",
-    textAlign: "center", // Explicit centering for safety
+    textAlign: "center",
+    textShadow: "0 2px 10px rgba(0,0,0,0.2)",
   },
   accentWrap: {
     display: "inline-block",
@@ -163,15 +166,7 @@ export default function Hero() {
       </motion.div>
       {/* Headline with social media logo (logo represents the platform) - doubled size */}
       <motion.h1
-        style={{
-          fontSize: "clamp(34px, 6vw, 68px)",
-          fontWeight: 900,
-          lineHeight: 1.05,
-          letterSpacing: "-1.5px",
-          marginBottom: 12,
-          color: "var(--foreground)",
-          textAlign: "center",
-        }}
+        style={s.h1}
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ type: "spring", stiffness: 100, damping: 20, delay: 0.1 }}
@@ -183,6 +178,7 @@ export default function Hero() {
             display: "inline-flex",
             alignItems: "center",
             verticalAlign: "middle",
+            filter: "drop-shadow(0 0 15px var(--primary))",
           }}
         >
           <AnimatePresence mode="wait">

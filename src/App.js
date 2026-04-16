@@ -1,28 +1,24 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import Header from './components/Header';
 import Hero from './components/Hero';
 import { StatsRow, HowItWorks, Features, Legal, Footer } from './components/Sections';
 import Toast from './components/Toast';
 
 export default function App() {
-  const [isDark, setIsDark] = useState(() => {
-    const saved = localStorage.getItem('theme');
-    return saved ? saved === 'dark' : true;
-  });
-
-  useEffect(() => {
-    document.body.classList.toggle('dark', isDark);
-    localStorage.setItem('theme', isDark ? 'dark' : 'light');
-  }, [isDark]);
-
   return (
-    <>
-      <div className="blob-container">
-        <div className="blob blob-1"></div>
-        <div className="blob blob-2"></div>
-        <div className="blob blob-3"></div>
-      </div>
-      <Header isDark={isDark} onToggleTheme={() => setIsDark(d => !d)} />
+    <div className="main-wrapper">
+      <video
+        autoPlay
+        loop
+        muted
+        playsInline
+        className="full-page-video"
+      >
+        <source src="/Odyssey - Feels calm but its already moving.mp4" type="video/mp4" />
+      </video>
+      <div className="full-page-overlay" />
+      
+      <Header />
       <main style={{ paddingTop: '72px' }}>
         <Hero />
         <StatsRow />
@@ -42,6 +38,6 @@ export default function App() {
           header { padding: 14px 18px !important; }
         }
       `}</style>
-    </>
+    </div>
   );
 }

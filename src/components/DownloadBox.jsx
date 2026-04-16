@@ -16,27 +16,53 @@ const s = {
     flexDirection: "column",
     gap: 20,
   },
-  inputRow: { display: "flex", gap: 12 },
-  input: {
+  inputWrapper: {
+    position: "relative",
     flex: 1,
-    background: "rgba(255, 255, 255, 0.05)",
-    backdropFilter: "blur(10px)",
-    borderWidth: "1px",
-    borderStyle: "solid",
-    borderColor: "color-mix(in oklab, var(--glass-border), var(--primary) 75%)",
-    borderRadius: "calc(var(--radius) / 1.2)",
-    padding: "18px 24px",
-    fontSize: 16,
+    display: "flex",
+    alignItems: "center",
+  },
+  inputRow: { display: "flex", gap: 12, alignItems: "center" },
+  input: {
+    width: "100%",
+    background: "rgba(0, 0, 0, 0.2)",
+    border: "1px solid rgba(0, 0, 0, 0.4)",
+    borderRadius: "20px",
+    padding: "20px 28px",
+    paddingRight: "100px",
+    fontSize: 17,
     fontWeight: 500,
     color: "var(--foreground)",
     outline: "none",
-    minWidth: 0,
-    transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+    transition: "all 0.4s cubic-bezier(0.16, 1, 0.3, 1)",
+    backdropFilter: "blur(5px)",
+    WebkitBackdropFilter: "blur(5px)",
+    boxShadow:
+      "inset 0 2px 5px rgba(0,0,0,0.5), 0 1px 1px rgba(255,255,255,0.05)",
+  },
+  pasteBtn: {
+    position: "absolute",
+    right: 12,
+    background: "rgba(255, 255, 255, 0.05)",
+    border: "1px solid rgba(0, 0, 0, 0.3)",
+    color: "var(--foreground)",
+    padding: "8px 16px",
+    borderRadius: "12px",
+    fontSize: 12,
+    fontWeight: 700,
+    cursor: "pointer",
+    boxShadow:
+      "0 2px 4px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,0.1)",
+    transition: "all 0.2s",
+    backdropFilter: "blur(4px)",
+    WebkitBackdropFilter: "blur(4px)",
   },
   btn: {
     background: "var(--primary)",
+    backgroundImage:
+      "linear-gradient(180deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 100%)",
     color: "var(--primary-foreground)",
-    border: "none",
+    border: "1px solid rgba(0, 0, 0, 0.3)",
     borderRadius: "calc(var(--radius) / 1.2)",
     padding: "18px 36px",
     fontSize: 15,
@@ -45,10 +71,12 @@ const s = {
     transition: "all 0.3s ease",
     cursor: "pointer",
     flexShrink: 0,
-    boxShadow: "0 8px 16px rgba(var(--accent-rgb), 0.15)",
+    boxShadow:
+      "0 10px 20px rgba(0,0,0,0.5), inset 0 1px 2px rgba(255,255,255,0.3)",
     display: "flex",
     alignItems: "center",
     gap: 10,
+    textShadow: "0 -1px 0 rgba(0,0,0,0.2)",
   },
   detectRow: {
     display: "flex",
@@ -163,6 +191,20 @@ export default function DownloadBox() {
     }
   }
 
+  async function handlePaste() {
+    try {
+      const text = await navigator.clipboard.readText();
+      if (text) {
+        setUrl(text);
+        setPlatform(detectPlatform(text));
+        setError("");
+        handleFetch(text);
+      }
+    } catch (err) {
+      console.error("Paste failed", err);
+    }
+  }
+
   function handleKeyDown(e) {
     if (e.key === "Enter") handleFetch();
   }
@@ -178,29 +220,48 @@ export default function DownloadBox() {
       transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
     >
       <div style={s.inputRow} className="input-row-mobile">
-        <input
-          ref={inputRef}
-          style={{
-            ...s.input,
-            borderColor: error
-              ? "var(--destructive)"
-              : "color-mix(in oklab, var(--glass-border), var(--primary) 25%)",
-            boxShadow: url ? "0 0 0 4px rgba(var(--accent-rgb), 0.15)" : "none",
-            filter: isLocked ? "grayscale(0.5) opacity(0.7)" : "none",
-            background: url
-              ? "rgba(255, 255, 255, 0.1)"
-              : "rgba(255, 255, 255, 0.05)",
-          }}
-          type="url"
-          placeholder="Paste media link here…"
-          value={url}
-          onChange={handleUrlChange}
-          onKeyDown={handleKeyDown}
-          disabled={isLocked}
-          readOnly={isLocked}
-          autoComplete="off"
-          spellCheck={false}
-        />
+        <div style={s.inputWrapper}>
+          <input
+            ref={inputRef}
+            className="input-with-paste"
+            style={{
+              ...s.input,
+              borderColor: error
+                ? "var(--destructive)"
+                : url
+                  ? "var(--primary)"
+                  : "rgba(0,0,0,0.4)",
+              boxShadow: url
+                ? "inset 0 4px 8px rgba(0,0,0,0.7), 0 1px 1px rgba(255,255,255,0.08)"
+                : "inset 0 3px 6px rgba(0,0,0,0.6), 0 1px 1px rgba(255,255,255,0.05)",
+              filter: isLocked ? "grayscale(0.5) opacity(0.7)" : "none",
+              background: url ? "rgba(0, 0, 0, 0.35)" : "rgba(0, 0, 0, 0.25)",
+            }}
+            type="url"
+            placeholder="Paste media link here…"
+            value={url}
+            onChange={handleUrlChange}
+            onKeyDown={handleKeyDown}
+            disabled={isLocked}
+            readOnly={isLocked}
+            autoComplete="off"
+            spellCheck={false}
+          />
+          {!url && !isLocked && (
+            <motion.button
+              whileHover={{
+                scale: 1.05,
+                background: "rgba(255, 255, 255, 0.1)",
+              }}
+              whileTap={{ scale: 0.95 }}
+              className="mobile-paste-btn"
+              style={s.pasteBtn}
+              onClick={handlePaste}
+            >
+              Paste
+            </motion.button>
+          )}
+        </div>
         <motion.button
           whileHover={
             !isUrlValid || isLocked ? {} : { scale: 1.02, opacity: 0.9 }
@@ -250,7 +311,6 @@ export default function DownloadBox() {
             style={{ overflow: "hidden" }}
           >
             <div style={s.detectRow}>
-
               {platform === "instagram" && (
                 <>
                   <div
@@ -261,7 +321,18 @@ export default function DownloadBox() {
                       color: "#fff",
                     }}
                   >
-                    IG
+                    <svg
+                      width="12"
+                      height="12"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.5"
+                    >
+                      <rect x="2" y="2" width="20" height="20" rx="4" />
+                      <circle cx="12" cy="12" r="5" />
+                      <circle cx="18" cy="6" r="1.5" fill="currentColor" />
+                    </svg>
                   </div>
                   <span style={{ color: "var(--foreground)" }}>
                     Instagram recognized
@@ -273,11 +344,18 @@ export default function DownloadBox() {
                   <div
                     style={{
                       ...s.detectIcon,
-                      background: "#1DA1F2",
+                      background: "#000",
                       color: "#fff",
                     }}
                   >
-                    X
+                    <svg
+                      width="10"
+                      height="10"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                    >
+                      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                    </svg>
                   </div>
                   <span style={{ color: "var(--foreground)" }}>
                     X recognized
@@ -293,7 +371,14 @@ export default function DownloadBox() {
                       color: "#fff",
                     }}
                   >
-                    FB
+                    <svg
+                      width="12"
+                      height="12"
+                      viewBox="0 0 16 16"
+                      fill="currentColor"
+                    >
+                      <path d="M16 8.049c0-4.446-3.582-8.05-8-8.05C3.58 0-.002 3.603-.002 8.05c0 4.017 2.926 7.347 6.75 7.951v-5.625h-2.03V8.05H6.75V6.275c0-2.017 1.195-3.131 3.022-3.131.876 0 1.791.157 1.791.157v1.98h-1.009c-.993 0-1.303.621-1.303 1.258v1.51h2.218l-.354 2.326H9.25V16c3.824-.604 6.75-3.934 6.75-7.951" />
+                    </svg>
                   </div>
                   <span style={{ color: "var(--foreground)" }}>
                     Facebook recognized

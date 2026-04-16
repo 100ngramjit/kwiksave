@@ -12,7 +12,6 @@ const styles = {
     left: 0,
     right: 0,
     width: "100vw",
-    backdropFilter: "blur(5px)",
     background: "transparent",
     zIndex: 9999,
   },
@@ -32,12 +31,14 @@ const styles = {
     width: 32,
     height: 32,
     background: "var(--primary)",
+    backgroundImage: "linear-gradient(180deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 100%)",
     borderRadius: "10px",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
     color: "var(--primary-foreground)",
-    boxShadow: "0 4px 12px rgba(var(--accent-rgb), 0.3)",
+    border: "1px solid rgba(0,0,0,0.3)",
+    boxShadow: "0 4px 8px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255,255,255,0.3)",
   },
   logoBeta: {
     background: "var(--secondary)",
@@ -73,7 +74,7 @@ const styles = {
   },
 };
 
-export default function Header({ isDark, onToggleTheme }) {
+export default function Header() {
   const scrollTo = (id) => {
     window.scrollTo({ top: 0, behavior: "smooth" });
     if (id !== "top") {
@@ -127,37 +128,6 @@ export default function Header({ isDark, onToggleTheme }) {
             Legal
           </span>
         </nav>
-        <motion.div
-          style={{
-            ...styles.themeBtn,
-            background: isDark ? "var(--primary)" : "var(--muted)",
-          }}
-          onClick={onToggleTheme}
-          title={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          <motion.div
-            animate={{ left: isDark ? 24 : 3 }}
-            transition={{ type: "spring", stiffness: 300, damping: 25 }}
-            style={{
-              width: 20,
-              height: 20,
-              background: "#fff",
-              borderRadius: "50%",
-              boxShadow: "0 2px 5px rgba(0,0,0,0.2)",
-              position: "absolute",
-              top: 2,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              color: isDark ? "var(--primary)" : "#888",
-              fontSize: 11,
-            }}
-          >
-            {isDark ? "🌙" : "☀️"}
-          </motion.div>
-        </motion.div>
       </div>
     </motion.header>
   );

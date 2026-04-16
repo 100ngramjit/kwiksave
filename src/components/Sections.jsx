@@ -59,10 +59,11 @@ export function StatsRow() {
           style={{
             textAlign: "center",
             background: "var(--card)",
-            border: "1px solid var(--border)",
+            backgroundImage: "var(--skeuo-gradient)",
+            border: "1px solid rgba(0, 0, 0, 0.4)",
             borderRadius: "var(--radius)",
             padding: "24px 40px",
-            boxShadow: "var(--shadow-sm)",
+            boxShadow: "0 10px 20px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.08)",
             flex: "1 1 200px",
             maxWidth: 240,
           }}
@@ -184,13 +185,14 @@ export function HowItWorks() {
             transition={{ delay: i * 0.15 }}
             whileHover={{ scale: 1.02 }}
             style={{
-              background: "var(--card)",
-              border: "1px solid var(--border)",
-              borderRadius: "var(--radius)",
-              padding: 40,
-              position: "relative",
-              boxShadow: "var(--shadow-sm)",
-              cursor: "default",
+            background: "var(--card)",
+            backgroundImage: "var(--skeuo-gradient)",
+            border: "1px solid rgba(0, 0, 0, 0.4)",
+            borderRadius: "var(--radius)",
+            padding: 40,
+            position: "relative",
+            boxShadow: "0 15px 35px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.1)",
+            cursor: "default",
             }}
           >
             <div
@@ -308,11 +310,13 @@ export function Features() {
             whileHover={{ translateY: -5, borderColor: "var(--primary)" }}
             style={{
               background: "var(--card)",
+              backgroundImage: "var(--skeuo-gradient)",
               borderWidth: "1px",
               borderStyle: "solid",
-              borderColor: "var(--border)",
+              borderColor: "rgba(0, 0, 0, 0.3)",
               borderRadius: "var(--radius)",
               padding: 32,
+              boxShadow: "0 8px 16px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.08)",
               cursor: "default",
             }}
           >
@@ -368,11 +372,13 @@ export function Legal() {
       <div
         style={{
           display: "flex",
-          background: "var(--accent)",
+          background: "rgba(0, 0, 0, 0.2)",
           padding: 6,
           borderRadius: "var(--radius)",
           width: "fit-content",
           marginBottom: 32,
+          boxShadow: "inset 0 2px 4px rgba(0, 0, 0, 0.5), 0 1px 1px rgba(255, 255, 255, 0.05)",
+          border: "1px solid rgba(0,0,0,0.3)",
         }}
       >
         {["terms", "privacy"].map((t) => (
@@ -383,14 +389,16 @@ export function Legal() {
               padding: "10px 24px",
               fontSize: 14,
               fontWeight: 700,
-              background: tab === t ? "var(--card)" : "transparent",
+              background: tab === t ? "var(--primary)" : "transparent",
+              backgroundImage: tab === t ? "linear-gradient(180deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 100%)" : "none",
               color:
-                tab === t ? "var(--foreground)" : "var(--muted-foreground)",
-              border: "none",
-              borderRadius: "calc(var(--radius) - 4px)",
+                tab === t ? "var(--primary-foreground)" : "var(--muted-foreground)",
+              border: tab === t ? "1px solid rgba(0,0,0,0.2)" : "none",
+              borderRadius: "calc(var(--radius) - 6px)",
               cursor: "pointer",
               transition: "all 0.2s ease",
               fontFamily: "var(--font-sans)",
+              boxShadow: tab === t ? "0 2px 4px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,0.2)" : "none",
             }}
           >
             {t === "terms" ? "Terms & Conditions" : "Privacy Policy"}
@@ -405,10 +413,11 @@ export function Legal() {
         animate={{ opacity: 1, x: 0 }}
         style={{
           background: "var(--card)",
-          border: "1px solid var(--border)",
+          backgroundImage: "var(--skeuo-gradient)",
+          border: "1px solid rgba(0, 0, 0, 0.4)",
           borderRadius: "var(--radius)",
           padding: 48,
-          boxShadow: "var(--shadow-md)",
+          boxShadow: "0 20px 40px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.1)",
         }}
       >
         {tab === "terms" ? (
