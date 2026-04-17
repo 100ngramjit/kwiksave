@@ -21,8 +21,14 @@ const s = {
     flex: 1,
     display: "flex",
     alignItems: "center",
+    width: "100%",
   },
-  inputRow: { display: "flex", gap: 12, alignItems: "center" },
+  inputRow: { 
+    display: "flex", 
+    gap: 12, 
+    alignItems: "center",
+    width: "100%",
+  },
   input: {
     width: "100%",
     background: "rgba(0, 0, 0, 0.2)",
@@ -43,6 +49,8 @@ const s = {
   pasteBtn: {
     position: "absolute",
     right: 12,
+    left: "auto",
+    width: "auto",
     background: "rgba(255, 255, 255, 0.05)",
     border: "1px solid rgba(0, 0, 0, 0.3)",
     color: "var(--foreground)",
@@ -60,23 +68,25 @@ const s = {
   btn: {
     background: "var(--primary)",
     backgroundImage:
-      "linear-gradient(180deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 100%)",
+      "linear-gradient(180deg, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0) 100%)",
     color: "var(--primary-foreground)",
-    border: "1px solid rgba(0, 0, 0, 0.3)",
-    borderRadius: "calc(var(--radius) / 1.2)",
+    border: "1px solid rgba(0, 0, 0, 0.5)",
+    borderRadius: "var(--radius)",
     padding: "18px 36px",
-    fontSize: 15,
-    fontWeight: 700,
+    fontSize: 16,
+    fontWeight: 800,
     whiteSpace: "nowrap",
-    transition: "all 0.3s ease",
+    transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
     cursor: "pointer",
     flexShrink: 0,
     boxShadow:
-      "0 10px 20px rgba(0,0,0,0.5), inset 0 1px 2px rgba(255,255,255,0.3)",
+      "0 8px 16px rgba(0, 0, 0, 0.4), inset 0 1.5px 1.5px rgba(255, 255, 255, 0.3)",
     display: "flex",
     alignItems: "center",
+    justifyContent: "center",
     gap: 10,
-    textShadow: "0 -1px 0 rgba(0,0,0,0.2)",
+    textShadow: "0 -1px 0 rgba(0, 0, 0, 0.2)",
+    letterSpacing: "-0.01em",
   },
   detectRow: {
     display: "flex",
@@ -119,6 +129,28 @@ const s = {
     borderRadius: 5,
     transition: "width .4s ease-out",
   },
+  clearBtn: {
+    position: "absolute",
+    right: 12,
+    left: "auto",
+    width: "auto",
+    background: "rgba(255, 255, 255, 0.08)",
+    border: "1px solid rgba(0, 0, 0, 0.4)",
+    color: "var(--foreground)",
+    width: 32,
+    height: 32,
+    borderRadius: "10px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    cursor: "pointer",
+    boxShadow: "0 2px 4px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,0.1)",
+    transition: "all 0.2s",
+    backdropFilter: "blur(4px)",
+    WebkitBackdropFilter: "blur(4px)",
+    fontSize: 16,
+    padding: 0,
+  },
   error: {
     display: "flex",
     alignItems: "center",
@@ -142,6 +174,7 @@ export default function DownloadBox() {
   const [progress, setProgress] = useState({ pct: 0, label: "" });
   const [error, setError] = useState("");
   const [mediaInfo, setMediaInfo] = useState(null);
+  const [isFocused, setIsFocused] = useState(false);
   const inputRef = useRef();
 
   function handleUrlChange(e) {
@@ -150,6 +183,14 @@ export default function DownloadBox() {
     setError("");
     setMediaInfo(null);
     setPlatform(detectPlatform(val));
+  }
+
+  function handleClear() {
+    setUrl("");
+    setPlatform(null);
+    setError("");
+    setMediaInfo(null);
+    inputRef.current?.focus();
   }
 
   async function handleFetch(customUrl) {
@@ -221,22 +262,24 @@ export default function DownloadBox() {
     >
       <div style={s.inputRow} className="input-row-mobile">
         <div style={s.inputWrapper}>
-          <input
+          <motion.input
             ref={inputRef}
             className="input-with-paste"
             style={{
               ...s.input,
               borderColor: error
                 ? "var(--destructive)"
-                : url
+                : isFocused || url
                   ? "var(--primary)"
                   : "rgba(0,0,0,0.4)",
-              boxShadow: url
-                ? "inset 0 4px 8px rgba(0,0,0,0.7), 0 1px 1px rgba(255,255,255,0.08)"
+              boxShadow: isFocused || url
+                ? `inset 0 4px 8px rgba(0,0,0,0.7), 0 0 0 4px color-mix(in oklch, var(--primary) 15%, transparent), 0 1px 1px rgba(255,255,255,0.08)`
                 : "inset 0 3px 6px rgba(0,0,0,0.6), 0 1px 1px rgba(255,255,255,0.05)",
               filter: isLocked ? "grayscale(0.5) opacity(0.7)" : "none",
-              background: url ? "rgba(0, 0, 0, 0.35)" : "rgba(0, 0, 0, 0.25)",
+              background: isFocused || url ? "rgba(0, 0, 0, 0.35)" : "rgba(0, 0, 0, 0.25)",
             }}
+            onFocus={() => setIsFocused(true)}
+            onBlur={() => setIsFocused(false)}
             type="url"
             placeholder="Paste media link here…"
             value={url}
@@ -246,38 +289,88 @@ export default function DownloadBox() {
             readOnly={isLocked}
             autoComplete="off"
             spellCheck={false}
+            animate={error ? { x: [-2, 2, -2, 2, 0] } : {}}
+            transition={{ duration: 0.4 }}
           />
-          {!url && !isLocked && (
-            <motion.button
-              whileHover={{
-                scale: 1.05,
-                background: "rgba(255, 255, 255, 0.1)",
-              }}
-              whileTap={{ scale: 0.95 }}
-              className="mobile-paste-btn"
-              style={s.pasteBtn}
-              onClick={handlePaste}
-            >
-              Paste
-            </motion.button>
-          )}
+          <AnimatePresence>
+            {!url && !isLocked && (
+              <motion.button
+                key="paste"
+                initial={{ opacity: 0, x: 20, scale: 0.8 }}
+                animate={{ opacity: 1, x: 0, scale: 1 }}
+                exit={{ opacity: 0, x: 10, scale: 0.9 }}
+                whileHover={{
+                  scale: 1.05,
+                  background: "rgba(255, 255, 255, 0.1)",
+                  boxShadow: "0 4px 12px rgba(0,0,0,0.4), inset 0 1px 1px rgba(255,255,255,0.2)",
+                }}
+                whileTap={{ scale: 0.95 }}
+                className="mobile-paste-btn"
+                style={s.pasteBtn}
+                onClick={handlePaste}
+              >
+                Paste
+              </motion.button>
+            )}
+            {url && !isLocked && (
+              <motion.button
+                key="clear"
+                initial={{ opacity: 0, scale: 0.5, rotate: -45 }}
+                animate={{ opacity: 1, scale: 1, rotate: 0 }}
+                exit={{ opacity: 0, scale: 0.5, rotate: 45 }}
+                whileHover={{
+                  scale: 1.1,
+                  background: "rgba(255, 255, 255, 0.15)",
+                  color: "var(--primary)",
+                }}
+                whileTap={{ scale: 0.9 }}
+                style={s.clearBtn}
+                onClick={handleClear}
+              >
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="3"
+                >
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </motion.button>
+            )}
+          </AnimatePresence>
         </div>
         <motion.button
           whileHover={
-            !isUrlValid || isLocked ? {} : { scale: 1.02, opacity: 0.9 }
+            !isUrlValid || isLocked 
+              ? {} 
+              : { 
+                  scale: 1.02, 
+                  filter: "brightness(1.1)",
+                  boxShadow: "0 12px 24px rgba(0, 0, 0, 0.5), inset 0 1.5px 1.5px rgba(255, 255, 255, 0.4)"
+                }
           }
-          whileTap={!isUrlValid || isLocked ? {} : { scale: 0.98 }}
+          whileTap={
+            !isUrlValid || isLocked 
+              ? {} 
+              : { 
+                  scale: 0.98,
+                  y: 2,
+                  boxShadow: "0 2px 4px rgba(0, 0, 0, 0.6), inset 0 2px 4px rgba(0, 0, 0, 0.4)"
+                }
+          }
           style={{
             ...s.btn,
             background: isLocked ? "var(--muted)" : "var(--primary)",
+            backgroundImage: isLocked 
+              ? "none" 
+              : "linear-gradient(180deg, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0) 100%)",
             color: isLocked
               ? "var(--muted-foreground)"
               : "var(--primary-foreground)",
             cursor: !isUrlValid || isLocked ? "not-allowed" : "pointer",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: 10,
             opacity: !isUrlValid && !isLocked ? 0.6 : 1,
           }}
           onClick={handleFetch}
@@ -305,15 +398,18 @@ export default function DownloadBox() {
       <AnimatePresence>
         {url && platform && (
           <motion.div
-            initial={{ opacity: 0, height: 0, marginTop: 0 }}
-            animate={{ opacity: 1, height: "auto", marginTop: 16 }}
-            exit={{ opacity: 0, height: 0, marginTop: 0 }}
+            initial={{ opacity: 0, height: 0, y: -10 }}
+            animate={{ opacity: 1, height: "auto", y: 0 }}
+            exit={{ opacity: 0, height: 0, y: -10 }}
+            transition={{ type: "spring", stiffness: 300, damping: 25 }}
             style={{ overflow: "hidden" }}
           >
             <div style={s.detectRow}>
               {platform === "instagram" && (
                 <>
-                  <div
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
                     style={{
                       ...s.detectIcon,
                       background:
@@ -333,15 +429,21 @@ export default function DownloadBox() {
                       <circle cx="12" cy="12" r="5" />
                       <circle cx="18" cy="6" r="1.5" fill="currentColor" />
                     </svg>
-                  </div>
-                  <span style={{ color: "var(--foreground)" }}>
+                  </motion.div>
+                  <motion.span 
+                    initial={{ x: -5, opacity: 0 }}
+                    animate={{ x: 0, opacity: 1 }}
+                    style={{ color: "var(--foreground)" }}
+                  >
                     Instagram recognized
-                  </span>
+                  </motion.span>
                 </>
               )}
               {platform === "twitter" && (
                 <>
-                  <div
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
                     style={{
                       ...s.detectIcon,
                       background: "#000",
@@ -356,15 +458,21 @@ export default function DownloadBox() {
                     >
                       <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
                     </svg>
-                  </div>
-                  <span style={{ color: "var(--foreground)" }}>
+                  </motion.div>
+                  <motion.span 
+                    initial={{ x: -5, opacity: 0 }}
+                    animate={{ x: 0, opacity: 1 }}
+                    style={{ color: "var(--foreground)" }}
+                  >
                     X recognized
-                  </span>
+                  </motion.span>
                 </>
               )}
               {platform === "facebook" && (
                 <>
-                  <div
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
                     style={{
                       ...s.detectIcon,
                       background: "#1877F2",
@@ -379,10 +487,14 @@ export default function DownloadBox() {
                     >
                       <path d="M16 8.049c0-4.446-3.582-8.05-8-8.05C3.58 0-.002 3.603-.002 8.05c0 4.017 2.926 7.347 6.75 7.951v-5.625h-2.03V8.05H6.75V6.275c0-2.017 1.195-3.131 3.022-3.131.876 0 1.791.157 1.791.157v1.98h-1.009c-.993 0-1.303.621-1.303 1.258v1.51h2.218l-.354 2.326H9.25V16c3.824-.604 6.75-3.934 6.75-7.951" />
                     </svg>
-                  </div>
-                  <span style={{ color: "var(--foreground)" }}>
+                  </motion.div>
+                  <motion.span 
+                    initial={{ x: -5, opacity: 0 }}
+                    animate={{ x: 0, opacity: 1 }}
+                    style={{ color: "var(--foreground)" }}
+                  >
                     Facebook recognized
-                  </span>
+                  </motion.span>
                 </>
               )}
             </div>
@@ -393,9 +505,9 @@ export default function DownloadBox() {
       <AnimatePresence>
         {loading && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0 }}
+            initial={{ opacity: 0, scale: 0.98, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.98, y: 10 }}
             style={s.progressWrap}
           >
             <div style={s.progressTop}>
@@ -415,8 +527,9 @@ export default function DownloadBox() {
       <AnimatePresence>
         {error && (
           <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0, y: 10, x: -10 }}
+            animate={{ opacity: 1, y: 0, x: [0, -5, 5, -5, 5, 0] }}
+            exit={{ opacity: 0, scale: 0.95 }}
             style={s.error}
           >
             <svg

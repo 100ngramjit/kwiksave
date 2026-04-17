@@ -199,7 +199,7 @@ const s = {
 const rawBase = process.env.REACT_APP_BACKEND_URL || "http://localhost:8000";
 const API_BASE = rawBase.endsWith("/") ? rawBase.slice(0, -1) : rawBase;
 
-function FormatButton({ fmt, sourceUrl, info, isLocked, onStateChange }) {
+function FormatButton({ fmt, sourceUrl, info, isLocked, onStateChange, index }) {
   const [state, setState] = useState("idle"); // idle | downloading | saving | done
   const [dlProgress, setDlProgress] = useState(0);
   const [dlDetails, setDlDetails] = useState({
@@ -258,7 +258,6 @@ function FormatButton({ fmt, sourceUrl, info, isLocked, onStateChange }) {
 
     try {
       const blob = await fetchWithProgress(dlUrl, (pct) => {
-        // Transition to browser download progress once server starts streaming
         setDlProgress(pct);
         setDlDetails({
           speed: "",
@@ -294,15 +293,29 @@ function FormatButton({ fmt, sourceUrl, info, isLocked, onStateChange }) {
   const isSaving = state === "saving";
   const isDone = state === "done";
 
+  const btnVariants = {
+    hidden: { opacity: 0, scale: 0.9, y: 10 },
+    visible: (i) => ({
+      opacity: 1,
+      scale: 1,
+      y: 0,
+      transition: { delay: i * 0.05 + 0.2, type: "spring", stiffness: 300, damping: 20 },
+    }),
+  };
+
   return (
     <motion.button
+      variants={btnVariants}
+      initial="hidden"
+      animate="visible"
+      custom={index}
       whileHover={
         isLocked || state !== "idle"
           ? {}
           : {
               translateY: -4,
               borderColor: "var(--primary)",
-              boxShadow: "var(--shadow-md)",
+              boxShadow: "0 10px 20px rgba(0,0,0,0.4), inset 0 1px 1px rgba(255,255,255,0.1)",
             }
       }
       whileTap={isLocked || state !== "idle" ? {} : { scale: 0.98 }}
@@ -363,21 +376,6 @@ function FormatButton({ fmt, sourceUrl, info, isLocked, onStateChange }) {
                   }}
                 />
               </div>
-              {dlDetails.speed && (
-                <div
-                  style={{
-                    fontSize: 11,
-                    fontWeight: 500,
-                    opacity: 0.7,
-                    display: "flex",
-                    justifyContent: "space-between",
-                    marginTop: 2,
-                  }}
-                >
-                  <span>Speed: {dlDetails.speed}</span>
-                  <span>ETA: {dlDetails.eta}</span>
-                </div>
-              )}
             </div>
             <div
               style={{
@@ -388,10 +386,12 @@ function FormatButton({ fmt, sourceUrl, info, isLocked, onStateChange }) {
               }}
             >
               <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: dlProgress === null ? "100%" : `${dlProgress}%` }}
                 style={{
                   height: "100%",
                   background: "var(--primary)",
-                  width: dlProgress === null ? "100%" : `${dlProgress}%`,
+                  boxShadow: "0 0 10px var(--primary)",
                 }}
               />
             </div>
@@ -399,8 +399,8 @@ function FormatButton({ fmt, sourceUrl, info, isLocked, onStateChange }) {
         ) : isSaving ? (
           <motion.div
             key="sv"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
             style={{ color: "var(--foreground)" }}
           >
             <div style={{ fontSize: 13, fontWeight: 700 }}>Finalizing...</div>
@@ -411,8 +411,8 @@ function FormatButton({ fmt, sourceUrl, info, isLocked, onStateChange }) {
         ) : isDone ? (
           <motion.div
             key="dn"
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: [1, 1.1, 1], opacity: 1 }}
             style={{ color: "var(--primary-foreground)" }}
           >
             <div style={{ fontSize: 13, fontWeight: 700 }}>✓ Ready</div>
@@ -429,18 +429,20 @@ function FormatButton({ fmt, sourceUrl, info, isLocked, onStateChange }) {
           >
             <div style={s.fmtType}>
               {fmt.container.toUpperCase()}
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.5"
-              >
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                <polyline points="7 10 12 15 17 10" />
-                <line x1="12" y1="15" x2="12" y2="3" />
-              </svg>
+              <motion.div whileHover={{ y: 2 }}>
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                >
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                  <polyline points="7 10 12 15 17 10" />
+                  <line x1="12" y1="15" x2="12" y2="3" />
+                </svg>
+              </motion.div>
             </div>
             <div style={s.fmtDetail}>{fmt.label}</div>
             <div style={s.fmtSize}>{fmt.size}</div>
@@ -470,19 +472,36 @@ export default function MediaCard({
     return (
       <motion.div
         style={s.card}
-        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+        initial={{ opacity: 0, scale: 0.98, y: 30 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
+        whileHover={{ boxShadow: "0 25px 50px rgba(0,0,0,0.6), inset 0 1px 1px rgba(255,255,255,0.15)" }}
+        transition={{ type: "spring", stiffness: 100, damping: 22 }}
       >
         <div style={s.top}>
-          {info.thumbnail && (
-            <img src={info.thumbnail} style={s.thumb} alt="playlist thumb" />
-          )}
+          <motion.div 
+            whileHover={{ scale: 1.05 }} 
+            transition={{ type: "spring", stiffness: 300 }}
+            style={{ position: "relative" }}
+          >
+            {info.thumbnail && (
+              <img src={info.thumbnail} style={s.thumb} alt="playlist thumb" />
+            )}
+            <div style={{ position: "absolute", bottom: 8, right: 8, background: "rgba(0,0,0,0.8)", padding: "2px 6px", borderRadius: 4, fontSize: 10, fontWeight: 800, color: "var(--primary)" }}>PLAYLIST</div>
+          </motion.div>
           <div style={s.info}>
             <div style={s.title}>{info.title}</div>
             <div style={s.metaRow}>
-              <span style={s.chip}>PLAYLIST</span>
-              <span style={s.chip}>{info.view_count}</span>
-              <span style={s.chip}>{info.uploader}</span>
+              {chips.map((c, i) => (
+                <motion.span 
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: i * 0.05 }}
+                  key={i} 
+                  style={s.chip}
+                >
+                  {c}
+                </motion.span>
+              ))}
             </div>
           </div>
         </div>
@@ -498,9 +517,13 @@ export default function MediaCard({
               <motion.div
                 key={entry.id || idx}
                 style={s.playlistItem}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: idx * 0.03 + 0.3 }}
                 whileHover={{
                   background: "rgba(255,255,255,0.06)",
                   borderColor: "var(--primary)",
+                  x: 5,
                 }}
                 whileTap={{ scale: 0.99 }}
                 onClick={() => onFetch && onFetch(entry.url)}
@@ -521,17 +544,6 @@ export default function MediaCard({
               </motion.div>
             ))}
           </div>
-          <div
-            style={{
-              marginTop: 16,
-              fontSize: 12,
-              color: "var(--muted-foreground)",
-              textAlign: "center",
-              fontStyle: "italic",
-            }}
-          >
-            Click a video to fetch its download options
-          </div>
         </div>
       </motion.div>
     );
@@ -540,65 +552,88 @@ export default function MediaCard({
   return (
     <motion.div
       style={s.card}
-      initial={{ opacity: 0, scale: 0.95, y: 20 }}
+      initial={{ opacity: 0, scale: 0.98, y: 30 }}
       animate={{ opacity: 1, scale: 1, y: 0 }}
+      whileHover={{ boxShadow: "0 25px 50px rgba(0,0,0,0.6), inset 0 1px 1px rgba(255,255,255,0.15)" }}
       transition={{ type: "spring", stiffness: 100, damping: 22 }}
     >
       <div style={s.top}>
-        {info.thumbnail ? (
-          <motion.img
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            src={`${API_BASE}/api/proxy/thumbnail?url=${encodeURIComponent(info.thumbnail)}`}
-            alt="thumbnail"
-            style={s.thumb}
-            referrerPolicy="no-referrer"
-            onError={(e) => {
-              if (!e.target.dataset.triedOriginal) {
-                e.target.src = info.thumbnail;
-                e.target.dataset.triedOriginal = "true";
-              } else {
-                e.target.style.display = "none";
-              }
-            }}
-          />
-        ) : (
-          <div style={s.thumbPlaceholder}>
-            <svg
-              width="32"
-              height="32"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="var(--muted-foreground)"
-              strokeWidth="1.5"
-            >
-              <rect x="2" y="3" width="20" height="14" rx="2" />
-              <path d="M8 21h8M12 17v4" />
-            </svg>
-          </div>
-        )}
+        <motion.div 
+          whileHover={{ scale: 1.05 }} 
+          transition={{ type: "spring", stiffness: 300 }}
+          style={{ position: "relative" }}
+        >
+          {info.thumbnail ? (
+            <motion.img
+              initial={{ opacity: 0, filter: "blur(10px)" }}
+              animate={{ opacity: 1, filter: "blur(0px)" }}
+              src={`${API_BASE}/api/proxy/thumbnail?url=${encodeURIComponent(info.thumbnail)}`}
+              alt="thumbnail"
+              style={s.thumb}
+              referrerPolicy="no-referrer"
+              onError={(e) => {
+                if (!e.target.dataset.triedOriginal) {
+                  e.target.src = info.thumbnail;
+                  e.target.dataset.triedOriginal = "true";
+                } else {
+                  e.target.style.display = "none";
+                }
+              }}
+            />
+          ) : (
+            <div style={s.thumbPlaceholder}>
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--muted-foreground)" strokeWidth="1.5">
+                <rect x="2" y="3" width="20" height="14" rx="2" />
+                <path d="M8 21h8M12 17v4" />
+              </svg>
+            </div>
+          )}
+        </motion.div>
         <div style={s.info}>
-          <div style={s.title}>{info.title}</div>
+          <motion.div 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            style={s.title}
+          >
+            {info.title}
+          </motion.div>
           <div style={s.metaRow}>
             {chips.map((c, i) => (
-              <span key={i} style={s.chip}>
+              <motion.span 
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: i * 0.05 + 0.1 }}
+                key={i} 
+                style={s.chip}
+              >
                 {c}
-              </span>
+              </motion.span>
             ))}
           </div>
         </div>
       </div>
 
-      <div
-        style={{ height: "1px", background: "var(--border)", opacity: 0.5 }}
+      <motion.div
+        initial={{ scaleX: 0 }}
+        animate={{ scaleX: 1 }}
+        transition={{ delay: 0.3 }}
+        style={{ height: "1px", background: "var(--border)", opacity: 0.5, transformOrigin: "left" }}
       />
 
       <div>
-        <div style={s.sectionLabel}>Available Formats</div>
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 0.8 }}
+          transition={{ delay: 0.4 }}
+          style={s.sectionLabel}
+        >
+          Available Formats
+        </motion.div>
         <div style={s.grid}>
           {info.formats.map((fmt, idx) => (
             <FormatButton
               key={fmt.format_id || idx}
+              index={idx}
               fmt={fmt}
               sourceUrl={sourceUrl}
               info={info}

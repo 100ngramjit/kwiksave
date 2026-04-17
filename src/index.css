@@ -228,7 +228,7 @@ a {
   }
 
   .input-row-mobile > div, 
-  .input-row-mobile button {
+  .input-row-mobile > button {
     width: 100% !important;
   }
 
@@ -237,7 +237,7 @@ a {
   }
   
   .input-with-paste {
-    padding-right: 28px !important; /* Reset padding when paste is below */
+    padding-right: 100px !important; /* Definitively solve overlap for Clear/Paste buttons */
   }
 
   .main-header {

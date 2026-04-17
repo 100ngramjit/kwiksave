@@ -106,9 +106,10 @@ export default function Hero() {
   useEffect(() => {
     const intervalId = setInterval(() => {
       setIndex((prev) => (prev + 1) % words.length);
-    }, 1800);
+    }, 2200);
     return () => clearInterval(intervalId);
   }, []);
+
   const iconMap = {
     X: (
       <svg
@@ -152,26 +153,50 @@ export default function Hero() {
     <section style={s.hero}>
       {/* Badge */}
       <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ type: "spring", stiffness: 200, damping: 20 }}
+        initial={{ opacity: 0, scale: 0.9, y: 10 }}
+        animate={{ opacity: 1, scale: 1, y: [0, -5, 0] }}
+        transition={{ 
+          opacity: { duration: 0.6 },
+          scale: { type: "spring", stiffness: 200 },
+          y: { repeat: Infinity, duration: 4, ease: "easeInOut" }
+        }}
+        whileHover={{ scale: 1.05, y: -8 }}
         style={s.badge}
       >
         <motion.div
-          animate={{ opacity: [0.4, 1, 0.4] }}
+          animate={{ opacity: [0.4, 1, 0.4], scale: [1, 1.2, 1] }}
           transition={{ repeat: Infinity, duration: 2 }}
           style={s.dot}
         />
         10M+ downloads · Free · No sign-up
       </motion.div>
-      {/* Headline with social media logo (logo represents the platform) - doubled size */}
+
+      {/* Headline */}
       <motion.h1
         style={s.h1}
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ type: "spring", stiffness: 100, damping: 20, delay: 0.1 }}
+        initial="hidden"
+        whileInView="show"
+        viewport={{ once: true }}
+        variants={{
+          hidden: { opacity: 0 },
+          show: {
+            opacity: 1,
+            transition: { staggerChildren: 0.1, delayChildren: 0.1 }
+          }
+        }}
       >
-        Export media from{" "}
+        {["Export", "media", "from"].map((word, i) => (
+          <motion.span
+            key={i}
+            variants={{
+              hidden: { opacity: 0, y: 20 },
+              show: { opacity: 1, y: 0 }
+            }}
+            style={{ display: "inline-block", marginRight: "0.25em" }}
+          >
+            {word}
+          </motion.span>
+        ))}{" "}
         <div
           style={{
             color: "var(--primary)",
@@ -185,35 +210,50 @@ export default function Hero() {
             <motion.span
               key={words[index]}
               style={{ display: "flex", alignItems: "center" }}
-              variants={textVariants}
+              variants={{
+                initial: { opacity: 0, scale: 0.5, rotate: -20, filter: "blur(10px)" },
+                animate: { opacity: 1, scale: 1.2, rotate: 0, filter: "blur(0px)" },
+                exit: { opacity: 0, scale: 0.8, rotate: 20, filter: "blur(5px)" },
+              }}
               initial="initial"
               animate="animate"
               exit="exit"
-              transition={{ duration: 0.45, ease: "easeInOut" }}
+              transition={{ 
+                type: "spring", 
+                stiffness: 260, 
+                damping: 20,
+                duration: 0.5 
+              }}
             >
-              {iconMap[words[index]]}{" "}
-              {/* Logo only - represents the platform */}
+              {iconMap[words[index]]}
             </motion.span>
           </AnimatePresence>
         </div>
       </motion.h1>
+
       <motion.p
         style={{
           fontSize: "clamp(14px, 2vw, 16px)",
           fontWeight: 500,
           color: "var(--muted-foreground)",
           maxWidth: 480,
-          margin: "8px auto 32px", // small top margin so it hugs the title
+          margin: "8px auto 32px",
           lineHeight: 1.5,
           textAlign: "center",
         }}
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
+        transition={{ delay: 0.6, duration: 0.8 }}
       >
-        High‑quality. Instant. No hassle.
+        {/** Subtle breathing effect for subtext **/}
+        <motion.span
+          animate={{ opacity: [0.7, 1, 0.7] }}
+          transition={{ repeat: Infinity, duration: 3, ease: "linear" }}
+        >
+          High‑quality. Instant. No hassle.
+        </motion.span>
       </motion.p>
-      {/* Platform Icons section removed as per requirement */}
+      
       <DownloadBox />
     </section>
   );
