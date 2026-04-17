@@ -14,7 +14,7 @@ export default function App() {
   return (
     <div className="main-wrapper">
       <video autoPlay loop muted playsInline className="full-page-video">
-        <source src="/video.mp4" type="video/mp4" />
+        <source src="/sec.mp4" type="video/mp4" />
       </video>
       <div className="full-page-overlay" />
 
