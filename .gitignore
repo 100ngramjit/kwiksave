@@ -38,7 +38,6 @@ dist/
 # Temporary Downloads
 tmp/
 Downloads/
-*.mp4
 *.mp3
 *.webm
 *.mkv

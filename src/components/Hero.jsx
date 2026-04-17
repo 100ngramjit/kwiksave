@@ -6,7 +6,7 @@ const words = ["Facebook", "X", "Instagram"];
 
 const s = {
   hero: {
-  // FIXED CENTERING: flex container ensures perfect centering
+    // FIXED CENTERING: flex container ensures perfect centering
     display: "flex",
     flexDirection: "column",
     justifyContent: "center",
@@ -33,7 +33,8 @@ const s = {
     fontWeight: 700,
     color: "var(--secondary-foreground)",
     marginBottom: 24,
-    boxShadow: "0 4px 8px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,0.08)",
+    boxShadow:
+      "0 4px 8px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,0.08)",
   },
   dot: {
     width: 7,
@@ -155,10 +156,10 @@ export default function Hero() {
       <motion.div
         initial={{ opacity: 0, scale: 0.9, y: 10 }}
         animate={{ opacity: 1, scale: 1, y: [0, -5, 0] }}
-        transition={{ 
+        transition={{
           opacity: { duration: 0.6 },
           scale: { type: "spring", stiffness: 200 },
-          y: { repeat: Infinity, duration: 4, ease: "easeInOut" }
+          y: { repeat: Infinity, duration: 4, ease: "easeInOut" },
         }}
         whileHover={{ scale: 1.05, y: -8 }}
         style={s.badge}
@@ -181,8 +182,8 @@ export default function Hero() {
           hidden: { opacity: 0 },
           show: {
             opacity: 1,
-            transition: { staggerChildren: 0.1, delayChildren: 0.1 }
-          }
+            transition: { staggerChildren: 0.1, delayChildren: 0.1 },
+          },
         }}
       >
         {["Export", "media", "from"].map((word, i) => (
@@ -190,7 +191,7 @@ export default function Hero() {
             key={i}
             variants={{
               hidden: { opacity: 0, y: 20 },
-              show: { opacity: 1, y: 0 }
+              show: { opacity: 1, y: 0 },
             }}
             style={{ display: "inline-block", marginRight: "0.25em" }}
           >
@@ -211,18 +212,33 @@ export default function Hero() {
               key={words[index]}
               style={{ display: "flex", alignItems: "center" }}
               variants={{
-                initial: { opacity: 0, scale: 0.5, rotate: -20, filter: "blur(10px)" },
-                animate: { opacity: 1, scale: 1.2, rotate: 0, filter: "blur(0px)" },
-                exit: { opacity: 0, scale: 0.8, rotate: 20, filter: "blur(5px)" },
+                initial: {
+                  opacity: 0,
+                  scale: 0.5,
+                  rotate: -20,
+                  filter: "blur(10px)",
+                },
+                animate: {
+                  opacity: 1,
+                  scale: 1.2,
+                  rotate: 0,
+                  filter: "blur(0px)",
+                },
+                exit: {
+                  opacity: 0,
+                  scale: 0.8,
+                  rotate: 20,
+                  filter: "blur(5px)",
+                },
               }}
               initial="initial"
               animate="animate"
               exit="exit"
-              transition={{ 
-                type: "spring", 
-                stiffness: 260, 
+              transition={{
+                type: "spring",
+                stiffness: 260,
                 damping: 20,
-                duration: 0.5 
+                duration: 0.5,
               }}
             >
               {iconMap[words[index]]}
@@ -235,7 +251,7 @@ export default function Hero() {
         style={{
           fontSize: "clamp(14px, 2vw, 16px)",
           fontWeight: 500,
-          color: "var(--muted-foreground)",
+          color: "var(--foreground)",
           maxWidth: 480,
           margin: "8px auto 32px",
           lineHeight: 1.5,
@@ -250,10 +266,10 @@ export default function Hero() {
           animate={{ opacity: [0.7, 1, 0.7] }}
           transition={{ repeat: Infinity, duration: 3, ease: "linear" }}
         >
-          High‑quality. Instant. No hassle.
+          High‑quality. Open Source. No hassle.
         </motion.span>
       </motion.p>
-      
+
       <DownloadBox />
     </section>
   );
