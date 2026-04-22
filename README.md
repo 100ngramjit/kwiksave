@@ -99,17 +99,41 @@ sequenceDiagram
 
 ---
 
+## ⚙️ Environment Variables
+
+Copy `.env.example` to `.env` and update the values as needed:
+
+```bash
+cp .env.example .env
+```
+
+| Variable | Description | Default |
+| :--- | :--- | :--- |
+| `REACT_APP_BACKEND_URL` | The URL of your KwikSave API. | `http://localhost:8000` |
+| `YDL_COOKIES` | (Optional) Netscape-formatted cookies for `yt-dlp`. | (None) |
+| `DEBUG` | (Optional) Enable verbose backend logging (`true`/`false`). | `false` |
+
+---
+
 ## ⚡ Deployment Guide
 
 The engine requires `yt-dlp` and `ffmpeg` binaries. Docker is the recommended deployment method.
 
 ### 🏠 Local Development
-1.  **Backend**:
+
+1.  **Environment Setup**:
+    ```bash
+    cp .env.example .env
+    # Edit .env with your configuration
+    ```
+
+2.  **Backend**:
     ```bash
     pip install -r requirements.txt
     uvicorn kwiksave_backend:app --reload --port 8000
     ```
-2.  **Frontend**:
+
+3.  **Frontend**:
     ```bash
     npm install && npm start
     ```
