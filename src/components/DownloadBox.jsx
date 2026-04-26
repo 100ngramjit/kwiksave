@@ -31,20 +31,20 @@ const s = {
   },
   input: {
     width: "100%",
-    background: "rgba(0, 0, 0, 0.2)",
-    border: "1px solid rgba(0, 0, 0, 0.4)",
-    borderRadius: "20px",
-    padding: "20px 28px",
+    background: "rgba(0, 0, 0, 0.4)",
+    border: "1px solid var(--skeuo-border-dark)",
+    borderRadius: "24px",
+    padding: "0 28px",
+    height: "64px",
     paddingRight: "100px",
     fontSize: 17,
     fontWeight: 500,
     color: "var(--foreground)",
     outline: "none",
     transition: "all 0.4s cubic-bezier(0.16, 1, 0.3, 1)",
-    backdropFilter: "blur(5px)",
-    WebkitBackdropFilter: "blur(5px)",
-    boxShadow:
-      "inset 0 2px 5px rgba(0,0,0,0.5), 0 1px 1px rgba(255,255,255,0.05)",
+    backdropFilter: "blur(12px)",
+    WebkitBackdropFilter: "blur(12px)",
+    boxShadow: "var(--skeuo-shadow-inset)",
   },
   pasteBtn: {
     position: "absolute",
@@ -67,25 +67,24 @@ const s = {
   },
   btn: {
     background: "var(--primary)",
-    backgroundImage:
-      "linear-gradient(180deg, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0) 100%)",
+    backgroundImage: "var(--skeuo-gradient)",
     color: "var(--primary-foreground)",
-    border: "1px solid rgba(0, 0, 0, 0.5)",
-    borderRadius: "var(--radius)",
-    padding: "18px 36px",
-    fontSize: 16,
+    border: "1px solid var(--skeuo-border-dark)",
+    borderRadius: "24px",
+    padding: "0 40px",
+    height: "64px",
+    fontSize: 17,
     fontWeight: 800,
     whiteSpace: "nowrap",
     transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
     cursor: "pointer",
     flexShrink: 0,
-    boxShadow:
-      "0 8px 16px rgba(0, 0, 0, 0.4), inset 0 1.5px 1.5px rgba(255, 255, 255, 0.3)",
+    boxShadow: "var(--skeuo-shadow-raised)",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
     gap: 10,
-    textShadow: "0 -1px 0 rgba(0, 0, 0, 0.2)",
+    textShadow: "0 -1px 1px rgba(0, 0, 0, 0.3)",
     letterSpacing: "-0.01em",
   },
   detectRow: {
@@ -273,10 +272,10 @@ export default function DownloadBox() {
                   ? "var(--primary)"
                   : "rgba(0,0,0,0.4)",
               boxShadow: isFocused || url
-                ? `inset 0 4px 8px rgba(0,0,0,0.7), 0 0 0 4px color-mix(in oklch, var(--primary) 15%, transparent), 0 1px 1px rgba(255,255,255,0.08)`
-                : "inset 0 3px 6px rgba(0,0,0,0.6), 0 1px 1px rgba(255,255,255,0.05)",
+                ? `inset 0 4px 8px rgba(0,0,0,0.7), 0 0 0 4px color-mix(in oklch, var(--primary) 15%, transparent), 0 1px 1px rgba(255,255,255,0.12)`
+                : "var(--skeuo-shadow-inset)",
               filter: isLocked ? "grayscale(0.5) opacity(0.7)" : "none",
-              background: isFocused || url ? "rgba(0, 0, 0, 0.35)" : "rgba(0, 0, 0, 0.25)",
+              background: isFocused || url ? "rgba(0, 0, 0, 0.4)" : "rgba(0, 0, 0, 0.3)",
             }}
             onFocus={() => setIsFocused(true)}
             onBlur={() => setIsFocused(false)}

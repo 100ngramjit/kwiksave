@@ -63,7 +63,8 @@ export function StatsRow() {
             border: "1px solid rgba(0, 0, 0, 0.4)",
             borderRadius: "var(--radius)",
             padding: "24px 40px",
-            boxShadow: "0 10px 20px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.08)",
+            boxShadow:
+              "0 10px 20px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.08)",
             flex: "1 1 200px",
             maxWidth: 240,
           }}
@@ -185,14 +186,15 @@ export function HowItWorks() {
             transition={{ delay: i * 0.15 }}
             whileHover={{ scale: 1.02 }}
             style={{
-            background: "var(--card)",
-            backgroundImage: "var(--skeuo-gradient)",
-            border: "1px solid rgba(0, 0, 0, 0.4)",
-            borderRadius: "var(--radius)",
-            padding: 40,
-            position: "relative",
-            boxShadow: "0 15px 35px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.1)",
-            cursor: "default",
+              background: "var(--card)",
+              backgroundImage: "var(--skeuo-gradient)",
+              border: "1px solid rgba(0, 0, 0, 0.4)",
+              borderRadius: "var(--radius)",
+              padding: 40,
+              position: "relative",
+              boxShadow:
+                "0 15px 35px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.1)",
+              cursor: "default",
             }}
           >
             <div
@@ -316,7 +318,8 @@ export function Features() {
               borderColor: "rgba(0, 0, 0, 0.3)",
               borderRadius: "var(--radius)",
               padding: 32,
-              boxShadow: "0 8px 16px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.08)",
+              boxShadow:
+                "0 8px 16px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.08)",
               cursor: "default",
             }}
           >
@@ -377,7 +380,8 @@ export function Legal() {
           borderRadius: "var(--radius)",
           width: "fit-content",
           marginBottom: 32,
-          boxShadow: "inset 0 2px 4px rgba(0, 0, 0, 0.5), 0 1px 1px rgba(255, 255, 255, 0.05)",
+          boxShadow:
+            "inset 0 2px 4px rgba(0, 0, 0, 0.5), 0 1px 1px rgba(255, 255, 255, 0.05)",
           border: "1px solid rgba(0,0,0,0.3)",
         }}
       >
@@ -390,15 +394,23 @@ export function Legal() {
               fontSize: 14,
               fontWeight: 700,
               background: tab === t ? "var(--primary)" : "transparent",
-              backgroundImage: tab === t ? "linear-gradient(180deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 100%)" : "none",
+              backgroundImage:
+                tab === t
+                  ? "linear-gradient(180deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 100%)"
+                  : "none",
               color:
-                tab === t ? "var(--primary-foreground)" : "var(--muted-foreground)",
+                tab === t
+                  ? "var(--primary-foreground)"
+                  : "var(--muted-foreground)",
               border: tab === t ? "1px solid rgba(0,0,0,0.2)" : "none",
               borderRadius: "calc(var(--radius) - 6px)",
               cursor: "pointer",
               transition: "all 0.2s ease",
               fontFamily: "var(--font-sans)",
-              boxShadow: tab === t ? "0 2px 4px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,0.2)" : "none",
+              boxShadow:
+                tab === t
+                  ? "0 2px 4px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,0.2)"
+                  : "none",
             }}
           >
             {t === "terms" ? "Terms & Conditions" : "Privacy Policy"}
@@ -417,7 +429,8 @@ export function Legal() {
           border: "1px solid rgba(0, 0, 0, 0.4)",
           borderRadius: "var(--radius)",
           padding: 48,
-          boxShadow: "0 20px 40px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.1)",
+          boxShadow:
+            "0 20px 40px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.1)",
         }}
       >
         {tab === "terms" ? (

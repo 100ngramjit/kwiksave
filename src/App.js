@@ -19,7 +19,7 @@ export default function App() {
       <div className="full-page-overlay" />
 
       <Header />
-      <main style={{ paddingTop: "72px" }}>
+      <main style={{ paddingTop: "110px" }}>
         <Hero />
         <StatsRow />
         <HowItWorks />
@@ -33,9 +33,6 @@ export default function App() {
       <style>{`
         @media (max-width: 600px) {
           .hide-mobile { display: none !important; }
-        }
-        @media (max-width: 600px) {
-          header { padding: 14px 18px !important; }
         }
       `}</style>
     </div>
