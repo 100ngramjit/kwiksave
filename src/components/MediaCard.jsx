@@ -15,8 +15,8 @@ const s = {
     position: "relative",
     overflow: "hidden",
     textAlign: "left",
-    border: "1px solid var(--skeuo-border-dark)",
-    boxShadow: "var(--skeuo-shadow-raised)",
+    border: "1px solid rgba(255, 255, 255, 0.08)",
+    boxShadow: "0 20px 40px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.05)",
   },
   top: { display: "flex", gap: 20, flexWrap: "wrap" },
   thumb: {
@@ -27,7 +27,7 @@ const s = {
     flexShrink: 0,
     background: "rgba(0, 0, 0, 0.4)",
     border: "1px solid rgba(0, 0, 0, 0.6)",
-    boxShadow: "var(--skeuo-shadow-inset)",
+    boxShadow: "0 12px 32px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.15)",
   },
   thumbPlaceholder: {
     width: 180,
@@ -462,6 +462,39 @@ export default function MediaCard({
     info.uploader,
   ].filter(Boolean);
 
+  const BlurredBackground = () => (
+    info.thumbnail ? (
+      <>
+        <div 
+          style={{ 
+            position: "absolute", 
+            top: 0, 
+            left: 0, 
+            right: 0, 
+            bottom: 0,
+            backgroundImage: `url(${API_BASE}/api/proxy/thumbnail?url=${encodeURIComponent(info.thumbnail)})`, 
+            backgroundSize: "cover", 
+            backgroundPosition: "center", 
+            filter: "blur(70px) saturate(2) brightness(0.9)", 
+            opacity: 0.6, 
+            zIndex: 0,
+            transform: "scale(1.5)",
+            pointerEvents: "none"
+          }} 
+        />
+        <div 
+          style={{ 
+            position: "absolute", 
+            inset: 0, 
+            background: "linear-gradient(to bottom, rgba(0, 0, 0, 0.1) 0%, var(--card) 85%)",
+            zIndex: 0,
+            pointerEvents: "none"
+          }} 
+        />
+      </>
+    ) : null
+  );
+
   if (info.is_playlist) {
     return (
       <motion.div
@@ -471,72 +504,75 @@ export default function MediaCard({
         whileHover={{ boxShadow: "0 25px 50px rgba(0,0,0,0.6), inset 0 1px 1px rgba(255,255,255,0.15)" }}
         transition={{ type: "spring", stiffness: 100, damping: 22 }}
       >
-        <div style={s.top}>
-          <motion.div 
-            whileHover={{ scale: 1.05 }} 
-            transition={{ type: "spring", stiffness: 300 }}
-            style={{ position: "relative" }}
-          >
-            {info.thumbnail && (
-              <img src={info.thumbnail} style={s.thumb} alt="playlist thumb" />
-            )}
-            <div style={{ position: "absolute", bottom: 8, right: 8, background: "rgba(0,0,0,0.8)", padding: "2px 6px", borderRadius: 4, fontSize: 10, fontWeight: 800, color: "var(--primary)" }}>PLAYLIST</div>
-          </motion.div>
-          <div style={s.info}>
-            <div style={s.title}>{info.title}</div>
-            <div style={s.metaRow}>
-              {chips.map((c, i) => (
-                <motion.span 
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: i * 0.05 }}
-                  key={i} 
-                  style={s.chip}
-                >
-                  {c}
-                </motion.span>
-              ))}
+        <BlurredBackground />
+        <div style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", gap: 24 }}>
+          <div style={s.top}>
+            <motion.div 
+              whileHover={{ scale: 1.05 }} 
+              transition={{ type: "spring", stiffness: 300 }}
+              style={{ position: "relative" }}
+            >
+              {info.thumbnail && (
+                <img src={info.thumbnail} style={s.thumb} alt="playlist thumb" />
+              )}
+              <div style={{ position: "absolute", bottom: 8, right: 8, background: "rgba(0,0,0,0.8)", padding: "2px 6px", borderRadius: 4, fontSize: 10, fontWeight: 800, color: "var(--primary)" }}>PLAYLIST</div>
+            </motion.div>
+            <div style={s.info}>
+              <div style={s.title}>{info.title}</div>
+              <div style={s.metaRow}>
+                {chips.map((c, i) => (
+                  <motion.span 
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: i * 0.05 }}
+                    key={i} 
+                    style={s.chip}
+                  >
+                    {c}
+                  </motion.span>
+                ))}
+              </div>
             </div>
           </div>
-        </div>
 
-        <div
-          style={{ height: "1px", background: "var(--border)", opacity: 0.3 }}
-        />
+          <div
+            style={{ height: "1px", background: "var(--border)", opacity: 0.3 }}
+          />
 
-        <div>
-          <div style={s.sectionLabel}>Playlist Contents</div>
-          <div style={s.playlistContainer} className="custom-scrollbar">
-            {info.entries?.map((entry, idx) => (
-              <motion.div
-                key={entry.id || idx}
-                style={s.playlistItem}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: idx * 0.03 + 0.3 }}
-                whileHover={{
-                  background: "rgba(255,255,255,0.06)",
-                  borderColor: "var(--primary)",
-                  x: 5,
-                }}
-                whileTap={{ scale: 0.99 }}
-                onClick={() => onFetch && onFetch(entry.url)}
-              >
-                <div style={s.itemIndex}>
-                  {(idx + 1).toString().padStart(2, "0")}
-                </div>
-                {entry.thumbnail && (
-                  <img src={entry.thumbnail} style={s.itemThumb} alt="" />
-                )}
-                <div style={s.itemInfo}>
-                  <div style={s.itemTitle}>{entry.title}</div>
-                  <div style={s.itemUploader}>{entry.uploader}</div>
-                </div>
-                {entry.duration_str && (
-                  <div style={s.itemDuration}>{entry.duration_str}</div>
-                )}
-              </motion.div>
-            ))}
+          <div>
+            <div style={s.sectionLabel}>Playlist Contents</div>
+            <div style={s.playlistContainer} className="custom-scrollbar">
+              {info.entries?.map((entry, idx) => (
+                <motion.div
+                  key={entry.id || idx}
+                  style={s.playlistItem}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: idx * 0.03 + 0.3 }}
+                  whileHover={{
+                    background: "rgba(255,255,255,0.06)",
+                    borderColor: "var(--primary)",
+                    x: 5,
+                  }}
+                  whileTap={{ scale: 0.99 }}
+                  onClick={() => onFetch && onFetch(entry.url)}
+                >
+                  <div style={s.itemIndex}>
+                    {(idx + 1).toString().padStart(2, "0")}
+                  </div>
+                  {entry.thumbnail && (
+                    <img src={entry.thumbnail} style={s.itemThumb} alt="" />
+                  )}
+                  <div style={s.itemInfo}>
+                    <div style={s.itemTitle}>{entry.title}</div>
+                    <div style={s.itemUploader}>{entry.uploader}</div>
+                  </div>
+                  {entry.duration_str && (
+                    <div style={s.itemDuration}>{entry.duration_str}</div>
+                  )}
+                </motion.div>
+              ))}
+            </div>
           </div>
         </div>
       </motion.div>
@@ -551,90 +587,93 @@ export default function MediaCard({
       whileHover={{ boxShadow: "0 25px 50px rgba(0,0,0,0.6), inset 0 1px 1px rgba(255,255,255,0.15)" }}
       transition={{ type: "spring", stiffness: 100, damping: 22 }}
     >
-      <div style={s.top}>
-        <motion.div 
-          whileHover={{ scale: 1.05 }} 
-          transition={{ type: "spring", stiffness: 300 }}
-          style={{ position: "relative" }}
-        >
-          {info.thumbnail ? (
-            <motion.img
-              initial={{ opacity: 0, filter: "blur(10px)" }}
-              animate={{ opacity: 1, filter: "blur(0px)" }}
-              src={`${API_BASE}/api/proxy/thumbnail?url=${encodeURIComponent(info.thumbnail)}`}
-              alt="thumbnail"
-              style={s.thumb}
-              referrerPolicy="no-referrer"
-              onError={(e) => {
-                if (!e.target.dataset.triedOriginal) {
-                  e.target.src = info.thumbnail;
-                  e.target.dataset.triedOriginal = "true";
-                } else {
-                  e.target.style.display = "none";
-                }
-              }}
-            />
-          ) : (
-            <div style={s.thumbPlaceholder}>
-              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--muted-foreground)" strokeWidth="1.5">
-                <rect x="2" y="3" width="20" height="14" rx="2" />
-                <path d="M8 21h8M12 17v4" />
-              </svg>
-            </div>
-          )}
-        </motion.div>
-        <div style={s.info}>
+      <BlurredBackground />
+      <div style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", gap: 24 }}>
+        <div style={s.top}>
           <motion.div 
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            style={s.title}
+            whileHover={{ scale: 1.05 }} 
+            transition={{ type: "spring", stiffness: 300 }}
+            style={{ position: "relative" }}
           >
-            {info.title}
+            {info.thumbnail ? (
+              <motion.img
+                initial={{ opacity: 0, filter: "blur(10px)" }}
+                animate={{ opacity: 1, filter: "blur(0px)" }}
+                src={`${API_BASE}/api/proxy/thumbnail?url=${encodeURIComponent(info.thumbnail)}`}
+                alt="thumbnail"
+                style={s.thumb}
+                referrerPolicy="no-referrer"
+                onError={(e) => {
+                  if (!e.target.dataset.triedOriginal) {
+                    e.target.src = info.thumbnail;
+                    e.target.dataset.triedOriginal = "true";
+                  } else {
+                    e.target.style.display = "none";
+                  }
+                }}
+              />
+            ) : (
+              <div style={s.thumbPlaceholder}>
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--muted-foreground)" strokeWidth="1.5">
+                  <rect x="2" y="3" width="20" height="14" rx="2" />
+                  <path d="M8 21h8M12 17v4" />
+                </svg>
+              </div>
+            )}
           </motion.div>
-          <div style={s.metaRow}>
-            {chips.map((c, i) => (
-              <motion.span 
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: i * 0.05 + 0.1 }}
-                key={i} 
-                style={s.chip}
-              >
-                {c}
-              </motion.span>
-            ))}
+          <div style={s.info}>
+            <motion.div 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              style={s.title}
+            >
+              {info.title}
+            </motion.div>
+            <div style={s.metaRow}>
+              {chips.map((c, i) => (
+                <motion.span 
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: i * 0.05 + 0.1 }}
+                  key={i} 
+                  style={s.chip}
+                >
+                  {c}
+                </motion.span>
+              ))}
+            </div>
           </div>
         </div>
-      </div>
 
-      <motion.div
-        initial={{ scaleX: 0 }}
-        animate={{ scaleX: 1 }}
-        transition={{ delay: 0.3 }}
-        style={{ height: "1px", background: "var(--border)", opacity: 0.5, transformOrigin: "left" }}
-      />
+        <motion.div
+          initial={{ scaleX: 0 }}
+          animate={{ scaleX: 1 }}
+          transition={{ delay: 0.3 }}
+          style={{ height: "1px", background: "var(--border)", opacity: 0.5, transformOrigin: "left" }}
+        />
 
-      <div>
-        <motion.div 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 0.8 }}
-          transition={{ delay: 0.4 }}
-          style={s.sectionLabel}
-        >
-          Available Formats
-        </motion.div>
-        <div style={s.grid}>
-          {info.formats.map((fmt, idx) => (
-            <FormatButton
-              key={fmt.format_id || idx}
-              index={idx}
-              fmt={fmt}
-              sourceUrl={sourceUrl}
-              info={info}
-              isLocked={isParentLocked}
-              onStateChange={onDownloadStateChange}
-            />
-          ))}
+        <div>
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 0.8 }}
+            transition={{ delay: 0.4 }}
+            style={s.sectionLabel}
+          >
+            Available Formats
+          </motion.div>
+          <div style={s.grid}>
+            {info.formats.map((fmt, idx) => (
+              <FormatButton
+                key={fmt.format_id || idx}
+                index={idx}
+                fmt={fmt}
+                sourceUrl={sourceUrl}
+                info={info}
+                isLocked={isParentLocked}
+                onStateChange={onDownloadStateChange}
+              />
+            ))}
+          </div>
         </div>
       </div>
     </motion.div>
